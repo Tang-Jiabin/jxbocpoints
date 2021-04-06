@@ -1,0 +1,67 @@
+[
+  {
+    "name": "首页",
+    "icon": "&#xe68e;",
+    "url": "",
+    "hidden": false,
+    "list": []
+  },
+  {
+    "name": "用户管理",
+    "icon": "&#xe612;",
+    "url": "",
+    "hidden": false,
+    "list": [
+      {
+        "name": "用户列表",
+        "url": "user_index.html"
+      }
+    ]
+  },
+  {
+    "name": "商品管理",
+    "icon": "&#xe609;",
+    "url": "",
+    "hidden": false,
+    "list": [
+      {
+        "name": "商品列表",
+        "url": "goods_index.html"
+      }
+    ]
+  },
+  {
+    "name": "特权管理",
+    "icon": "&#xe609;",
+    "url": "",
+    "hidden": false,
+    "list": [
+      {
+        "name": "特权列表",
+        "url": "privilege_index.html"
+      },
+      {
+        "name": "添加权限",
+        "url": "add_privilege.html"
+      }
+    ]
+  },
+  {
+    "name": "系统设置",
+    "icon": "&#xe620;",
+    "url": "",
+    "hidden": false,
+    "list": [
+      {
+        "name": "修改密码",
+        "url": "web_pwd.html"
+      }
+    ]
+  },
+  {
+    "name": "退出登录",
+    "icon": "&#xe65c;",
+    "url": "login.html",
+    "list": []
+  }
+]

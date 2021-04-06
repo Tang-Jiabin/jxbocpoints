@@ -1,0 +1,171 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+    <link type="text/css" rel="stylesheet" href="css/shouji.css"/>
+    <link type="text/css" rel="stylesheet" href="css/css.css"/>
+    <meta name="viewport" content="width=device-width initial-scale=1.0 maximum-scale=1.0 user-scalable=yes"/>
+    <script type="text/javascript" src="js/jquery1.42.min.js"></script>
+    <script type="text/javascript" src="js/tab.js"></script>
+    <script type="text/javascript" src="js/common.js"></script>
+
+    <script type="text/javascript">
+
+        let url = ''
+        let typeId = 0;
+
+        function clickCode7() {
+            if (Number(typeId) === 2) {
+                toWechat(url);
+            } else {
+                window.location.href = url
+            }
+        }
+
+
+        $(function () {
+
+            let orderNo = getAddressBarParam("orderNo")
+            console.log(orderNo)
+            if (isEmpty(orderNo)) {
+                history.back(-1)
+            } else {
+                init(orderNo)
+            }
+
+            initDemo();
+        })
+
+
+        function initDemo() {
+            console.log("hello word!");
+            /*****引入cordova**/
+            window.onload = function () {
+
+                window.terminal = (function () {
+                    var u = navigator.userAgent;//app = navigator.appVersion;
+                    var version = u.indexOf('bocapp(') > -1 ? u.match(/bocapp\(\S+\)/)[0].slice(7, -1) : '3.0.0';
+                    return {//浏览器版本信息
+                        trident: u.indexOf('Trident') > -1,
+                        presto: u.indexOf('Presto') > -1,
+                        webKit: u.indexOf('AppleWebKit') > -1,
+                        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') > -1,
+                        mobile: !!u.match(/AppleWebKit.*Mobile.*/),
+                        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/),
+                        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1,
+                        iPhone: u.indexOf('iPhone') > -1,
+                        iPad: u.indexOf('iPad') > -1,
+                        webApp: u.indexOf('Safari') > -1,
+                        weixin: u.indexOf('MicroMessenger') > -1 && u.replace(/.*(MicroMessenger\/[^\s]*).*/, "$1").replace("MicroMessenger/", "") || false,
+                        appVersion: u.indexOf('bocapp(') > -1 ? u.match(/bocapp\(\S+\)/)[0].slice(7, -1) : '3.0.0'
+                    };
+                })()
+
+                /**
+                 * 引入cordova
+                 */
+                var script = document.createElement('script');
+                var pth = "https://ebsnew.boc.cn/bocphone/BocMerchant/" // 生产环境
+                if (window.terminal.iPhone) {
+                    script.src = pth + 'paylib/ios.js'
+                } else if (window.terminal.android) {
+                    script.src = pth + 'paylib/android.js'
+                } else {
+                    alert('无法识别终端类型')
+                }
+                document.getElementsByTagName('head')[0].appendChild(script);
+
+                /**
+                 * 绑定事件---调用cordova
+                 */
+                document.addEventListener('deviceready', function () {
+                })
+            }
+        }
+
+        function toWechat(code) {
+            let path = 'pages/index/index?url=https://g.qll-times.com/api/cdk/o/cdkey/' + code
+            window.c_plugins.merchantBridge.weixinOpenMiniProgram(function () {
+            }, function (err) {
+                alert(err.message || err || '网络错误，请检查网络连接');
+            }, {
+                userName: 'gh_b1f8661211c5',
+                path: path
+            })
+        }
+
+        function init(orderNo) {
+            $.ajax({
+                cache: false,
+                type: "GET",
+                url: appData.domain + "/jxbocpoints/order/getOrderDetails",
+                beforeSend: function (request) {
+                    request.setRequestHeader("X-Auth-Token", localStorage.getItem("token"));
+                },
+                data: {'orderNo': orderNo},
+                dataType: "json",
+                async: false,
+                success: function (result) {
+                    console.log(result.status);
+                    console.log(result.msg);
+                    console.log(result.data);
+                    let products = result.data.products;
+                    let name = products.name;
+                    let imgUrl = products.imgUrl;
+
+                    let code = result.data.code;
+
+                    $("#imgUrl").attr("src", imgUrl)
+                    $("#name").html(name)
+                    url = code
+                    typeId = products.typeId;
+                    // $("#code").attr("href", code)
+
+
+                },
+                error: function (request) {
+                    alert("系统繁忙，请重试！");
+                }
+            });
+        }
+    </script>
+</head>
+
+<body style="background-color:#f5f5f5; background-image:url(images/jianbian_03.jpg); background-size:3%; background-repeat:repeat-x; background-position:top center;">
+
+<div class="dingdan_t"  onclick="clickCode7()" ontouchstart="clickCode7()" style="z-index: 9999">
+    <div class="dingdan_t_bg"><img src="images/order_bg.png"/></div>
+    <div class="dingdan_t1">
+        <div class="dingdan_l"><img id="imgUrl" src="images/dingdan2.png"/></div>
+        <div class="dingdan_m">
+            <p class="dingdan_m1" id="name">腾讯会员</p>
+
+            <!--            <div class="wsy">未使用</div>-->
+            <!--已使用-->
+            <!--            <div class="ysy">已使用</div>-->
+            <!--已使用--->
+        </div>
+        <div class="clear"
+        ></div>
+    </div>
+    <div class="dingdan_t2" >
+        <p><a href="#" id="code">去 领 取</a></p>
+        <!--已使用
+        <p><a href="javascript:void(0)" class="ysy2">卡密：xen5678988888gcs</a></p
+        已使用--->
+    </div>
+
+</div>
+<div class="dingdan_c">
+    <p><strong>券码使用方法：</strong></p>
+    <p>（1）用户在成功支付后请尽快领取相关权益。
+    <p>（2）权益领取成功后，交易无法取消。
+    <p>（3）卡密类权益，领取券码后可根据兑换说明去指定官网兑换充值。
+    <p>（4）充值类权益，请用户在领取时填写正确的账号信息，已充值的无法退回或转存至其他账号。
+    <p>（5）微信立减金，领取后将自动发放到领取微信的卡包中，在使用微信支付并选择中行借记卡支付时自动抵扣结算。
+    <p>（6）话费充值在月末和月初充值量较大，充值到账时间可能会出现延迟。</div>
+
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>权益兑换商城</title>
+    <link type="text/css" rel="stylesheet" href="css/shouji.css"/>
+    <link rel="stylesheet" href="css/swiper.min.css">
+    <meta name="viewport" content="width=device-width initial-scale=1.0 maximum-scale=1.0 user-scalable=yes"/>
+    <script type="text/javascript" src="js/jquery1.42.min.js"></script>
+    <script type="text/javascript" src="js/tab.js"></script>
+    <script type="text/javascript" src="js/yzm.js"></script>
+    <script type="text/javascript" src="js/common.js"></script>
+
+    <script>
+
+        $(document).ready(function () {
+
+            divHide()
+
+            initIntegral()
+
+            getGoodsInfo();
+
+            $("#huodongguize").click(function () {
+                $(".huodongguize_bg").show();
+            });
+            $(".hide").click(function () {
+                $(".huodongguize_bg").hide();
+                $(".bangding_bg").hide();
+            });
+            $("#bangding").click(function () {
+                $(".bangding_bg").show();
+            });
+
+
+        });
+    </script>
+
+    <script type="text/javascript">
+
+        let goodsList;
+
+        function divHide() {
+            $('.home8').hide()
+        }
+
+        //===========================================================
+
+        function initIntegral() {
+            let integral = localStorage.getItem('integral')
+            if (isEmpty(integral)) {
+                $.ajax({
+                    cache: false,
+                    type: "GET",
+                    url: appData.domain + "/jxbocpoints/user/getPersonal",
+                    beforeSend: function (request) {
+                        request.setRequestHeader("X-Auth-Token", localStorage.getItem("token"));
+                    },
+                    data: {},
+                    dataType: "json",
+                    async: false,
+                    success: function (result) {
+
+                        $('#integral').html(result.data.integral)
+
+                        localStorage.setItem('integral', result.data.integral)
+                        localStorage.setItem('phone', result.data.phone)
+
+                    },
+                    error: function (request) {
+                        alert("系统繁忙，请重试！");
+                    }
+                });
+            } else {
+                $('#integral').html(integral)
+            }
+        }
+
+        //===========================================================
+
+        function getGoodsInfo() {
+
+            $.ajax({
+                cache: false,
+                type: "GET",
+                url: appData.domain + "/jxbocpoints/products/getVipGoods",
+                beforeSend: function (request) {
+                    request.setRequestHeader("X-Auth-Token", localStorage.getItem("token"));
+                },
+                data: {},
+                dataType: "json",
+                async: false,
+                success: function (result) {
+
+                    console.log(result.status)
+                    console.log(result.msg)
+                    console.log(result.data)
+
+                    goodsList = result.data
+
+                    setGoodsList(goodsList)
+                },
+                error: function (request) {
+                    alert("系统繁忙，请重试！");
+                }
+            });
+
+        }
+
+        //===========================================================
+
+        function setGoodsList(goodsList) {
+            let html = ''
+
+            for (let i = 0; i < goodsList.length; i++) {
+                let name = goodsList[i].name
+                let productsList = goodsList[i].productsList
+                if (productsList.length > 0) {
+                    html = html + '<div class="home8" ></div><div class="title title1"><span><a href="#">&nbsp;</a></span>'+name+'</div>' +
+                        '<ul id="renwu_list3">'
+                    for (let j = 0; j < productsList.length; j++) {
+                        // html = html + '<li><a href="./vipProductDetails.html?productId=' + productsList[j].productsId + '">' +
+                        html = html + '<li><a href="./vipProductDetails.html?productId='+productsList[j].productsId+'&privilegeId='+goodsList[i].privilegeId+'">' +
+                            '<div class="prize">' + name + '</div>' +
+                            '<img src="' + productsList[j].imgUrl + '"/>' +
+                            '<div class="xianshi" style="margin-top:-30px; color:#f00">' + goodsList[i].cdate + '前领取 </div>' +
+                            '<p>' + productsList[j].name + '' +
+                            // '<p>剩余' + productsList[j].number + '件</p>' +
+                            '<p><strong>' + productsList[j].vipIntegral + '积分+' + productsList[j].vipPrice + '元</strong></p>' +
+                            '</a>' +
+                            '</li>'
+                    }
+                    html = html + '<div class="clear"></div></ul></div>'
+                }
+            }
+            $('#addHtml').html(html)
+            $('.home8').show()
+        }
+    </script>
+</head>
+
+<body style="background-color:#fff; padding-bottom:5%;">
+
+<div class="banner"><img src="images/jifen_bg.png"/>
+    <div class="jifen">
+        <div class="dangqian">当前积分</div>
+        <div class="chakanxiangqing"><a href="./pointsDetails.html">查看详情</a></div>
+        <div class="jifen_c" id="integral">0</div>
+        <div class="yaoqing">邀请推广好友参与活动获得积分</div>
+        <img src="images/card.png"/></div>
+</div>
+<div id="addHtml">
+
+</div>
+</body>
+</html>

@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>添加特权</title>
+    <link rel="stylesheet" href="./static/common/layui/css/layui.css">
+    <link rel="stylesheet" href="./static/admin/css/style.css">
+    <script src="./static/common/jquery-3.3.1.min.js"></script>
+    <script src="static/common/layui/layui.js" charset="utf-8"></script>
+    <script src="./static/common/vue.min.js"></script>
+    <script src="../js/common.js" charset="utf-8"></script>
+    <script src="../js/xlsx.full.min.js" charset="utf-8"></script>
+
+</head>
+<body>
+<div id="app">
+    <!--顶栏-->
+    <header>
+        <h1 v-text="webname"></h1>
+        <div class="breadcrumb">
+            <i class="layui-icon">&#xe715;</i>
+            <ul>
+                <li v-for="vo in address">
+                    <a v-text="vo.name" :href="vo.url"></a> <span>/</span>
+                </li>
+            </ul>
+        </div>
+    </header>
+
+    <div class="main">
+        <!--左栏-->
+        <div class="left">
+            <ul class="cl">
+                <!--顶级分类-->
+                <li v-for="vo,index in menu" :class="{hidden:vo.hidden}">
+                    <a href="javascript:;" :class="{active:vo.active}" @click="onActive(index)">
+                        <i class="layui-icon" v-html="vo.icon"></i>
+                        <span v-text="vo.name"></span>
+                        <i class="layui-icon arrow" v-show="vo.url.length==0">&#xe61a;</i> <i v-show="vo.active"
+                                                                                              class="layui-icon active">&#xe623;</i>
+                    </a>
+                    <!--子级分类-->
+                    <div v-for="vo2,index2 in vo.list">
+                        <a href="javascript:;" :class="{active:vo2.active}" @click="onActive(index,index2)"
+                           v-text="vo2.name"></a>
+                        <i v-show="vo2.active" class="layui-icon active">&#xe623;</i>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <!--右侧-->
+        <div class="right">
+            <fieldset class="layui-elem-field layui-field-title">
+                <legend>添加特权</legend>
+            </fieldset>
+            <div class="layui-form ">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">特权名称</label>
+                    <div class="layui-input-block">
+                        <input id="name" type="text" name="title" value="" placeholder="" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">开始日期</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="date" id="startDate" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">截止日期</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="date" id="closingDate" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">添加商品</label>
+                    <div class="layui-inline">
+                        <div class="layui-inline">
+                            <select id="products" name="products" value="" lay-verify="" lay-search>
+                            </select>
+                        </div>
+                        <div class="layui-inline">
+                            <button class="layui-btn layui-btn-normal" ontouchend="getSelectVal()" onclick="getSelectVal()">添加</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">特权商品</label>
+                    <div class="layui-inline">
+                        <table id="products_table" class="layui-table" lay-filter="products_table">
+                            <script type="text/html" id="barDemo">
+                                <a class="layui-btn layui-btn-danger layui-btn-sm" lay-event="del">删除</a>
+                            </script>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">添加用户</label>
+                    <div class="layui-inline">
+                        <!--                        <div class="layui-inline">-->
+                        <!--                            <input id="user_data" type="text" placeholder="客户号" class="layui-input">-->
+                        <!--                        </div>-->
+                        <!--                        <div class="layui-inline">-->
+                        <!--                            <button class="layui-btn layui-btn-normal" ontouchend="" onclick="addUser()">添加</button>-->
+                        <!--                        </div>-->
+                        <div class="layui-inline">
+                            <button class="layui-btn layui-btn-normal" ontouchend="upload.click()" onclick="upload.click()">批量添加</button>
+                            <input type="file" name="upload" id="upload" style="display: none;"/>
+                        </div>
+                        <div class="layui-inline">
+                            <a id="fileLink" ontouchend="upload.click()" onclick="upload.click()"></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">特权用户</label>
+                    <div class="layui-inline">
+                        <table id="user_table" class="layui-table" lay-filter="user_table">
+                            <script type="text/html" id="userBarDemo">
+                                <a class="layui-btn layui-btn-danger layui-btn-sm" lay-event="del">删除</a>
+                            </script>
+                        </table>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label"> </label>
+                    <div class="layui-inline">
+                        <button class="layui-btn" ontouchend="submit()" onclick="submit()">提交</button>
+                    </div>
+                    <div class="layui-inline">
+                        <button class="layui-btn layui-btn-danger" ontouchend="reset()" onclick="reset()">重置</button>
+                    </div>
+                </div>
+                <br>
+
+                <div class="layui-form-item" style="height: 40px"></div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+<script src="./static/admin/js/config.js"></script>
+<script src="./static/admin/js/script.js"></script>
+<script type="text/javascript">
+
+    let privilegeId = 0;
+
+    let priProducts = [];
+    let userTable = [];
+    let allProducts;
+    let userFile
+
+    let table;
+
+    layui.use(['laydate'], function () {
+        laydate = layui.laydate;
+
+        laydate.render({
+            elem: '#closingDate',
+            type: 'datetime'
+        });
+        laydate.render({
+            elem: '#startDate',
+            type: 'datetime'
+        });
+    })
+
+    $(function () {
+        getAllProducts()
+        privilegeId = getAddressBarParam('privilegeId');
+        if (isEmpty(privilegeId)) {
+            privilegeId = 0;
+        } else {
+            getPriProducts(privilegeId)
+        }
+    });
+
+    //获取所有商品
+    function getAllProducts() {
+        $.ajax({
+            cache: false,
+            type: "GET",
+            url: appData.domain + "/jxbocpoints/admin/getAllProducts",
+            beforeSend: function (request) {
+                request.setRequestHeader("X-Auth-Token", localStorage.getItem("p_admin_token"));
+            },
+            data: {},
+            dataType: "json",
+            async: false,
+            success: function (result) {
+
+                if (result.status !== 200) {
+                    alert(result.msg)
+                    if (result.status === 401) {
+                        window.location.href = "./login.html";
+                    }
+                    return;
+                }
+                setProductsOption(result.data)
+                allProducts = result.data
+            },
+            error: function () {
+                alert("系统繁忙，请重试！");
+            }
+        });
+    }
+
+    function getPriProducts(privilegeId) {
+        $.ajax({
+            url: appData.domain + '/jxbocpoints/admin/getPrivilegeInfo',
+            method: 'get',
+            data: {privilegeId: privilegeId},
+            beforeSend: function (request) {
+                request.setRequestHeader("X-Auth-Token", localStorage.getItem("p_admin_token"));
+            },
+            contentType: "application/json",
+            async: false,
+            success: function (res) {
+                if (res.status !== 200) {
+                    alert(res.msg)
+                    if (res.status === 401) {
+                        window.location.href = "./login.html";
+                    }
+                    return;
+                }
+                let data = res.data
+                if (data.privilege === 1) {
+                    priProducts = data.priProducts
+                    userTable = data.userTable
+                    $('#name').val(data.privilegeName)
+                    $('#startDate').val(data.startDate)
+                    $('#closingDate').val(data.closingDate)
+                    setProductsTable()
+                    setUserTable()
+                } else {
+                    alert("未找到特权信息")
+                }
+
+            },
+            error: function (data) {
+                alert("系统繁忙")
+            }
+        });
+    }
+
+    //设置商品下拉框
+    function setProductsOption(data) {
+        let options = ''
+        for (let i = 0; i < data.length; i++) {
+            let subProductList = data[i].subProductList;
+            let name = data[i].name
+            for (let j = 0; j < subProductList.length; j++) {
+                let subName = name + " " + subProductList[j].name
+                options = options + " <option value='" + subProductList[j].productsId + "'>" + subName + "</option>"
+            }
+        }
+        $('#products').html(options)
+    }
+
+    function getSelectVal() {
+        let productId = Number($('#products').val());
+        for (let i = 0; i < allProducts.length; i++) {
+            let subProductList = allProducts[i].subProductList;
+            for (let j = 0; j < subProductList.length; j++) {
+                let subProductId = Number(subProductList[j].productsId)
+                let pProductId = Number(allProducts[i].productsId)
+                if (subProductId === productId) {
+                    let parentName = allProducts[i].name
+                    let name = subProductList[j].name
+                    let money = subProductList[j].money
+                    let number = subProductList[j].number
+                    let vipPrice = subProductList[j].vipPrice
+                    let vipIntegral = subProductList[j].vipIntegral
+                    let product = {
+                        parentProductId: pProductId,
+                        subProductId: subProductId,
+                        parentName: parentName,
+                        name: name,
+                        money: money,
+                        number: number,
+                        vipPrice: vipPrice,
+                        vipIntegral: vipIntegral
+                    }
+                    let cz = 0;
+                    for (let k = 0; k < priProducts.length; k++) {
+                        if (priProducts[k].subProductId === subProductId) {
+                            cz = 1;
+                        }
+                    }
+                    if (cz === 0) {
+                        priProducts.push(product)
+                        setProductsTable()
+                    } else {
+
+                    }
+
+                }
+            }
+        }
+    }
+
+
+    //设置权限商品表格
+    function setProductsTable() {
+        layui.use('table', function () {
+            table = layui.table;
+            //监听单元格编辑
+            table.on('edit(products_table)', function (obj) {
+                var value = obj.value //得到修改后的值
+                    , data = obj.data //得到所在行所有键值
+                    , field = obj.field; //得到字段
+
+                if (!isNumber(value)) {
+                    layer.open({
+                        type: 1
+                        , offset: 'auto'
+                        , id: 'numberTip' //防止重复弹出
+                        , content: '<div style="padding: 20px 100px;">只能输入数字</div>'
+                        , btn: '关闭全部'
+                        , btnAlign: 'c' //按钮居中
+                        , shade: 0 //不显示遮罩
+                        , yes: function () {
+                            layer.closeAll();
+                        }
+                    });
+                }
+            });
+
+            //监听行工具事件
+            table.on('tool(products_table)', function (obj) {
+                var data = obj.data;
+                if (obj.event === 'del') {
+                    layer.confirm('确认删除吗', function (index) {
+                        delPriProducts(data.subProductId)
+                        layer.close(index);
+                    });
+                }
+            });
+            //展示已知数据
+            table.render({
+                elem: '#products_table'
+                , cellMinWidth: 100
+                , cols: [[ //标题栏
+                    // {field: 'subProductId', edit: 'text', title: 'ID', sort: true}
+                    {field: 'parentName', title: '商品名', align: 'center'}
+                    , {field: 'name', title: '分类', align: 'center'}
+                    , {field: 'money', title: '价值', sort: true, align: 'center'}
+                    , {field: 'number', edit: 'number', title: '数量', sort: true, align: 'center'}
+                    , {field: 'vipPrice', edit: 'text', title: '购买价格', sort: true, align: 'center'}
+                    , {field: 'vipIntegral', edit: 'text', title: '购买积分', sort: true, align: 'center'}
+                    , {fixed: 'right', title: '操作', toolbar: '#barDemo', align: 'center'}
+                ]]
+                , data: priProducts
+                , skin: 'line' //表格风格
+                , even: true
+                //,page: true //是否显示分页
+                //,limits: [5, 7, 10]
+                //,limit: 5 //每页默认显示的数量
+            });
+        });
+    }
+
+    //删除权限商品
+    function delPriProducts(productId) {
+        for (let i = 0; i < priProducts.length; i++) {
+            if (productId === priProducts[i].subProductId) {
+                priProducts.splice(i, 1);
+            }
+        }
+        setProductsTable()
+    }
+
+    //设置特权用户表格
+    function setUserTable() {
+
+        // 用户id
+        // customerId;
+
+        // 状态 1-开启 2-关闭
+        // status;
+        layui.use('table', function () {
+            table = layui.table;
+
+            //监听行工具事件
+            table.on('tool(user_table)', function (obj) {
+                var data = obj.data;
+                if (obj.event === 'del') {
+                    layer.confirm('确认删除吗', function (index) {
+
+                        layer.close(index);
+                    });
+                }
+            });
+            //展示已知数据
+            table.render({
+                elem: '#user_table'
+                , cellMinWidth: 100
+                , toolbar: true
+                , cols: [[ //标题栏
+                    {field: 'puId', edit: 'text', title: 'ID', sort: true, hide: true}
+                    , {field: 'customerId', title: '客户号', align: 'center'}
+                    , {
+                        field: 'status', title: '状态', sort: true, align: 'center', templet: function updateStatus(sta) {
+
+                            if (Number(sta.status) === 1) {
+                            return '未使用'
+                            }else if (Number(sta.status) === 2){
+                                return '已使用'
+                            }else {
+                                return '状态错误'
+                            }
+                        }
+                    }
+                    , {fixed: 'right', title: '操作', toolbar: '#userBarDemo', align: 'center'}
+                ]]
+                , data: userTable
+                , skin: 'line' //表格风格
+                , even: true
+                , page: true //是否显示分页
+                //,limits: [5, 7, 10]
+                //,limit: 5 //每页默认显示的数量
+            });
+        });
+
+    }
+
+    //添加特权用户
+    function addUser() {
+        let user = $('#user_data').val();
+        if (isEmpty(user)) {
+            return
+        }
+        let cz = 0;
+        for (let i = 0; i < userTable.length; i++) {
+            if (user === userTable[i]) {
+                cz = 1;
+            }
+        }
+        if (cz === 0) {
+            userTable.push(user)
+            setUserTable()
+        } else {
+            alert(user + " 已存在")
+        }
+
+    }
+
+    //删除特权用户
+    function deleteUser(text) {
+        layer.open({
+            type: 1
+            , offset: 'auto'
+            , id: 'queren'
+            , content: '<div style="padding: 20px 100px;">确认删除：' + text + '</div>'
+            , btn: ['确认', '取消']
+            , btnAlign: 'c' //按钮居中
+            , shade: 0 //不显示遮罩
+            , yes: function () {
+                console.log(text)
+                for (let i = 0; i < userTable.length; i++) {
+                    if (text + '' === userTable[i] + '') {
+                        userTable.splice(i, 1)
+                    }
+                }
+                setUserTable()
+                layer.closeAll();
+            },
+            btn2: function () {
+
+                layer.closeAll();
+            }
+        });
+    }
+
+    $('#upload').change(function (e) {
+        // let file = e.target.files[0];
+        // $('#fileLink').html(file.name)
+        // let reader = new FileReader();
+        // reader.onload = function (e) {
+        //     let data = e.target.result;
+        //     let workbook = XLSX.read(data, {type: 'binary'});
+        //     outputWorkbook(workbook);
+        // };
+        // reader.readAsBinaryString(file);
+        // let upload = document.getElementById('upload');
+        // upload.value = '';
+        //
+        let oFReader = new FileReader();
+        let file = e.target.files[0];
+        oFReader.readAsDataURL(e.target.files[0]);
+        oFReader.onload = function (oFREvent) {
+            $('#fileLink').html(file.name)
+        };
+        userFile = e.target.files[0]
+    })
+
+    function outputWorkbook(workbook) {
+        let cell = workbook.Strings
+        for (let i = 0; i < cell.length; i++) {
+            let val = cell[i].t.trim()
+            if (!isEmpty(val)) {
+                let cz = 0;
+                for (let j = 0; j < userTable.length; j++) {
+                    if (userTable[j] === val) {
+                        cz = 1;
+                    }
+                }
+                if (cz === 0) {
+                    userTable.push(val)
+                    setUserTable()
+                }
+            }
+        }
+    }
+
+    function reset() {
+        priProducts = []
+        userTable = []
+        userFile = null
+        setUserTable()
+        setProductsTable()
+    }
+
+
+    function submit() {
+        let privilegeName = $('#name').val().trim();
+        let closingDate = $('#closingDate').val().trim();
+        let startDate = $('#startDate').val().trim();
+        if (isEmpty(privilegeName)) {
+            alert("名称不能为空")
+            return
+        }
+        if (isEmpty(startDate) || isEmpty(closingDate)) {
+            alert("日期不能为空")
+            return
+        }
+        layer.open({
+            type: 1,
+            title: false,
+            offset: 'auto',
+            id: 'uploadTip',
+            content: '<div style="padding: 20px 100px;">上传中 <i class="layui-icon layui-icon-loading layui-anim layui-anim-rotate layui-anim-loop" style="display: inline-block"></i></div>',
+            btnAlign: 'c',
+            closeBtn: 0,
+            shade: 0,
+            yes: function () {
+
+            }
+        });
+        let data = {
+            "privilegeId": privilegeId,
+            "privilegeName": privilegeName,
+            "closingDate": closingDate,
+            "startDate": startDate,
+            "priProducts": priProducts,
+        }
+
+
+        $.ajax({
+            url: appData.domain + '/jxbocpoints/admin/addPrivilege',
+            method: 'post',
+            data: JSON.stringify(data),
+            type: "POST",
+            contentType: "application/json",
+            beforeSend: function (request) {
+                request.setRequestHeader("X-Auth-Token", localStorage.getItem("p_admin_token"));
+            },
+            success: function (res) {
+
+                if (res.status === 200) {
+                    let data = res.data
+                    if (!isEmpty(userFile)) {
+                        let formData = new FormData()
+                        formData.append('privilegeId', data.privilegeId)
+                        formData.append('userFile', userFile)
+                        $.ajax({
+                            url: appData.domain + '/jxbocpoints/admin/addPrivilegeFile',
+                            method: 'post',
+                            data: formData,
+                            type: "POST",
+                            contentType: false,
+                            processData: false,
+                            success: function (res) {
+                                layer.open({
+                                    type: 1
+                                    , offset: 'auto' //具体配置参考：http://www.layui.com/doc/modules/layer.html#offset
+                                    , id: 'uploadTip2' //防止重复弹出
+                                    , content: '<div style="padding: 20px 100px;">上传成功</div>'
+                                    , btn: '关闭'
+                                    , btnAlign: 'c' //按钮居中
+                                    , shade: 0 //不显示遮罩
+                                    , yes: function () {
+                                        layer.closeAll();
+                                    }
+                                });
+
+                            },
+                            error: function (data) {
+                                alert("系统繁忙")
+                            }
+                        });
+                    } else {
+                        layer.open({
+                            type: 1
+                            , offset: 'auto' //具体配置参考：http://www.layui.com/doc/modules/layer.html#offset
+                            , id: 'uploadTip2' //防止重复弹出
+                            , content: '<div style="padding: 20px 100px;">上传成功</div>'
+                            , btn: '关闭'
+                            , btnAlign: 'c' //按钮居中
+                            , shade: 0 //不显示遮罩
+                            , yes: function () {
+                                layer.closeAll();
+                            }
+                        });
+                    }
+                }
+            },
+            error: function (data) {
+                alert("系统繁忙")
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

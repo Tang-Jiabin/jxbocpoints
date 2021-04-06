@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>用户列表</title>
+    <link rel="stylesheet" href="./static/common/layui/css/layui.css">
+    <link rel="stylesheet" href="./static/admin/css/style.css">
+    <script src="./static/common/layui/layui.js"></script>
+    <script src="./static/common/jquery-3.3.1.min.js"></script>
+    <script src="./static/common/vue.min.js"></script>
+    <script src="../js/common.js"></script>
+    <script type="text/javascript">
+        let page = 0;
+        let totalPages = 0;
+
+        $(function () {
+            findUserPage(page, "")
+        })
+
+
+        function findUserPage(page, userNo) {
+            $.ajax({
+                cache: false,
+                type: "GET",
+                url: appData.domain + "/jxbocpoints/admin/getUserList",
+                beforeSend: function (request) {
+                    request.setRequestHeader("X-Auth-Token", localStorage.getItem("p_admin_token"));
+                },
+                data: {page: page, userNo: userNo},
+                dataType: "json",
+                async: false,
+                success: function (result) {
+
+                    if (result.status !== 200) {
+                        alert(result.msg)
+                        if (result.status === 401) {
+                            window.location.href = "./login.html";
+                        }
+                        return;
+                    }
+
+                    setUserPage(result.data)
+                },
+                error: function () {
+                    alert("系统繁忙，请重试！");
+
+                }
+            });
+        }
+
+        function setUserPage(data) {
+            let content = data.content
+
+
+            if (data.first) {
+                $('#previousPage').attr("class", "disabled");
+            }
+
+            if (data.last) {
+                $('#nextPage').attr("class", "disabled");
+            }
+
+            page = data.number
+            totalPages = data.totalPages
+
+            $('#currentPage').html(page + 1)
+
+            $('#user_table').html("")
+            //回显到表格
+            $.each(content, function (i, n) {
+                let row = $("#template").clone();
+                row.find("#userNo").text(n.customerId);
+                row.find("#phone").text(n.mobile);
+                row.find("#address").text(n.ibknum);
+                row.find("#integral").text(n.integral);
+
+                let privilege = ''
+                for (let j = 0; j < n.privilegeList.length; j++) {
+                    privilege = privilege + n.privilegeList[j].name + "</br>";
+                }
+
+                row.find("#privilege").html(privilege);
+                row.find("#createDate").text(n.createDate);
+                row.appendTo("#user_table");//添加到模板的容器中
+            });
+        }
+
+        function previousPage() {
+            if (page >= 1) {
+                page = page - 1;
+                findUserPage(page, "")
+            }
+        }
+
+        function nextPage() {
+            if(page < totalPages-1){
+                page = page + 1;
+                findUserPage(page, "")
+            }
+        }
+
+        function search(){
+            let name = $('#name').val()
+            findUserPage(0, name)
+        }
+
+        function reset(){
+            $('#name').val('')
+            findUserPage(0, "")
+        }
+    </script>
+</head>
+<body>
+<div id="app">
+    <!--顶栏-->
+    <header>
+        <h1 v-text="webname"></h1>
+        <div class="breadcrumb">
+            <i class="layui-icon">&#xe715;</i>
+            <ul>
+                <li v-for="vo in address">
+                    <a v-text="vo.name" :href="vo.url"></a> <span>/</span>
+                </li>
+            </ul>
+        </div>
+    </header>
+
+    <div class="main">
+        <!--左栏-->
+        <div class="left">
+            <ul class="cl">
+                <!--顶级分类-->
+                <li v-for="vo,index in menu" :class="{hidden:vo.hidden}">
+                    <a href="javascript:;" :class="{active:vo.active}" @click="onActive(index)">
+                        <i class="layui-icon" v-html="vo.icon"></i>
+                        <span v-text="vo.name"></span>
+                        <i class="layui-icon arrow" v-show="vo.url.length==0">&#xe61a;</i>
+                        <i v-show="vo.active" class="layui-icon active">&#xe623;</i>
+                    </a>
+                    <!--子级分类-->
+                    <div v-for="vo2,index2 in vo.list">
+                        <a href="javascript:;" :class="{active:vo2.active}" @click="onActive(index,index2)"
+                           v-text="vo2.name"></a>
+                        <i v-show="vo2.active" class="layui-icon active">&#xe623;</i>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <!--右侧-->
+        <div class="right">
+
+
+            <div class="layui-row">
+
+                <div class="layui-col-lg4">
+
+                    <div class="layui-input-inline">
+                        <input id="name" type="text" name="k" value="" placeholder="客户号" class="layui-input key">
+                    </div>
+                    <button type="button" class="layui-inline layui-btn sou" ontouchend="search()" onclick="search()">搜索</button>
+                    <button type="button" class="layui-inline layui-btn sou" ontouchend="reset()" onclick="reset()">重置</button>
+                </div>
+            </div>
+
+            <table class="layui-table layui-form" >
+
+                <thead>
+                <tr id="template">
+                    <th id="userNo">客户号</th>
+                    <th id="phone">手机号</th>
+                    <th id="address">地区</th>
+                    <th id="integral">积分余额</th>
+                    <th id="privilege">特权</th>
+                    <th id="createDate">注册日期</th>
+                </tr>
+                </thead>
+                <tbody id="user_table">
+
+                </tbody>
+
+            </table>
+
+            <div class="page">
+                <ul class="pagination">
+                    <li id="previousPage"><span ontouchend="previousPage()" onclick="previousPage()">上一页</span></li>
+                    <li class="active"><span id="currentPage">0</span></li>
+                    <li id="nextPage"><span ontouchend="nextPage()" onclick="nextPage()">下一页</span></li>
+                </ul>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+<script src="./static/admin/js/config.js"></script>
+<script src="./static/admin/js/script.js"></script>
+</body>
+</html>

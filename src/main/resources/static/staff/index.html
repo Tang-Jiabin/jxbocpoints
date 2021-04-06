@@ -1,0 +1,202 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>排行榜</title>
+    <link type="text/css" rel="stylesheet" href="css/shouji.css"/>
+    <meta name="viewport" content="width=device-width initial-scale=1.0 maximum-scale=1.0 user-scalable=yes"/>
+    <script type="text/javascript" src="js/jquery1.42.min.js"></script>
+    <script type="text/javascript" src="../js/common.js"></script>
+
+    <script type="text/javascript">
+
+        $(function () {
+
+            getStaffInfo()
+
+        })
+
+        function getStaffInfo() {
+            $.ajax({
+                cache: false,
+                type: "GET",
+                contentType: "application/json;charset=UTF-8",
+                url: appData.domain + "/jxbocpoints/user/getStaffInfo",
+                beforeSend: function (request) {
+                    request.setRequestHeader("X-Auth-Token", localStorage.getItem("token"));
+                },
+                data: {},
+                dataType: "json",
+                async: false,
+                error: function (request) {
+                    alert("系统繁忙，请重试！");
+                },
+                success: function (result) {
+                    console.log(result)
+                    if (result.status === appData.ok) {
+                        let branchName = result.data.branchName
+                        let outletsName = result.data.outletsName
+                        let staffName = result.data.staffName
+                        let allRanking = result.data.allRanking
+                        let outletsRanking = result.data.outletsRanking
+
+                        $('#staffName').html("员工名称："+staffName);
+                        $('#outletsName').html(outletsName);
+                        $('#allRanking').html(allRanking);
+                        $('#outletsRanking').html(outletsRanking);
+
+                        if(branchName !== '省行（本部）'){
+                            $('#outlets').attr('href','branchRanking.html?branchName='+encodeURI(encodeURI(branchName)))
+                        }else{
+                            $('#outlets').attr('href','branchRanking.html')
+                        }
+
+                        sessionStorage.setItem("branchName",branchName)
+                        sessionStorage.setItem("outletsName",outletsName)
+                        sessionStorage.setItem("staffName",staffName)
+                        sessionStorage.setItem("allRanking",allRanking)
+                        sessionStorage.setItem("outletsRanking",outletsRanking)
+
+                    } else {
+                        alert(result.msg)
+                        history.back(-1);
+                    }
+
+                }
+            });
+
+
+        }
+
+        function submitData() {
+            let zfb = $('#zfb').val()
+            let wx = $('#wx').val()
+            let zzjy = $('#zzjy').val()
+            let shjf = $('#shjf').val()
+            let etc = $('#etc').val()
+            let jhgh = $('#jhgh').val()
+            let jj = $('#jj').val()
+            let yb = $('#yb').val()
+            let kjhk = $('#kjhk').val()
+            let xykhk = $('#xykhk').val()
+            let zhgjs = $('#zhgjs').val()
+            let hd1 = $('#hd1').val()
+            let hd2 = $('#hd2').val()
+            let phone = $('#phone').val()
+            if (isEmpty(phone)) {
+                alert("手机号不能为空")
+                return;
+            }
+            let data = {
+                zfb: zfb,
+                wx: wx,
+                zzjy: zzjy,
+                shjf: shjf,
+                etc: etc,
+                jhgh: jhgh,
+                jj: jj,
+                yb: yb,
+                kjhk: kjhk,
+                xykhk: xykhk,
+                zhgjs: zhgjs,
+                phone: phone,
+                hd1: hd1,
+                hd2: hd2
+            }
+            $.ajax({
+                cache: false,
+                type: "POST",
+                contentType: "application/json;charset=UTF-8",
+                url: appData.domain + "/jxbocpoints/user/submitData",
+                beforeSend: function (request) {
+                    request.setRequestHeader("X-Auth-Token", localStorage.getItem("token"));
+                },
+                data: JSON.stringify(data),
+                dataType: "json",
+                async: false,
+                error: function (request) {
+                    alert("系统繁忙，请重试！");
+                },
+                success: function (result) {
+                    if (result.status === 200) {
+                        alert("提交成功")
+                    } else {
+                        alert(result.msg)
+                    }
+
+                }
+            });
+
+        }
+
+        function onClick(data) {
+            if ($(data).attr("checked")) {
+                $(data).attr("checked", "checked")
+                $(data).val("1")
+            } else {
+                $(data).removeAttr("checked")
+                $(data).val("0")
+            }
+        }
+
+
+    </script>
+</head>
+
+<body style="background-color:#efefef">
+
+<div class="luru_top" style="padding-bottom:0">
+    <div class="luru_but"><a href="inputDetails.html"><img src="images/mingxi.png"/></a></div>
+    <div class="touxiang"><img src="../images/bocLogo.png"/></div>
+    <div class="xinxi"><p id="staffName">员工名称：</p>
+        <p id="outletsName">南昌市XX支行营业部</p></div>
+    <div class="paiming">
+        <a href="allRankings.html"><strong id="allRanking">0</strong><br/>全辖排名</a>
+        <a id="outlets" href="outletsRanking.html" style="border-left:1px solid #fff"><strong id="outletsRanking">0</strong><br/>二级机构排名</a>
+    </div>
+</div>
+<div class="home6">
+    <div class="title">客户完成业务办理后录入客户信息即可参与活动</div>
+    <p><input id="phone" name="" type="text" class="txt1" placeholder="填写客户手机号"/></p></div>
+<div class="home6">
+    <div class="title2">请选择用户已完成的业务</div>
+    <div class="luru_c">
+        <div class="title3">手机银行交易</div>
+        <ul id="yewu_list">
+            <li><input ontouchend="onClick(this)" onclick="onClick(this)" name="" type="checkbox" id="zzjy" value="0"/>&nbsp;转账交易</li>
+            <li><input ontouchend="onClick(this)" onclick="onClick(this)" name="" type="checkbox" id="shjf" value="0"/>生活缴费</li>
+            <li><input ontouchend="onClick(this)" onclick="onClick(this)" name="" type="checkbox" id="etc" value="0"/>&nbsp;ETC</li>
+            <li><input ontouchend="onClick(this)" onclick="onClick(this)" name="" type="checkbox" id="jhgh" value="0"/>&nbsp;结汇购汇</li>
+            <li><input ontouchend="onClick(this)" onclick="onClick(this)" name="" type="checkbox" id="jj" value="0"/>&nbsp;基金</li>
+            <li><input ontouchend="onClick(this)" onclick="onClick(this)" name="" type="checkbox" id="yb" value="0"/>&nbsp;医保电子凭证</li>
+            <li><input ontouchend="onClick(this)" onclick="onClick(this)" name="" type="checkbox" id="kjhk" value="0"/>&nbsp;跨境汇款</li>
+            <li><input ontouchend="onClick(this)" onclick="onClick(this)" name="" type="checkbox" id="xykhk" value="0"/>&nbsp;信用卡还款</li>
+            <li><input ontouchend="onClick(this)" onclick="onClick(this)" name="" type="checkbox" id="zhgjs" value="0"/>&nbsp;账户贵金属</li>
+            <div class="clear"></div>
+        </ul>
+    </div>
+    <div class="luru_c">
+        <div class="title3">一键绑卡</div>
+        <ul id="yewu_list">
+            <li><input ontouchend="onClick(this)" onclick="onClick(this)" name="" type="checkbox" id="wx" value="0"/>&nbsp;微信</li>
+            <li><input ontouchend="onClick(this)" onclick="onClick(this)" name="" type="checkbox" id="zfb" value="0"/>&nbsp;支付宝</li>
+
+            <div class="clear"></div>
+        </ul>
+    </div>
+    <div class="luru_c">
+        <div class="title3">营销活动</div>
+        <ul id="yewu_list">
+            <li><input ontouchend="" onclick="onClick(this)" name="" type="checkbox" id="hd1" value="0"/>&nbsp;月月享好礼</li>
+            <li><input ontouchend="" onclick="onClick(this)" name="" type="checkbox" id="hd2" value="0"/>&nbsp;月月享好礼</li>
+            <li><input ontouchend="" onclick="onClick(this)" name="" type="checkbox" id="hd3" value="0"/>&nbsp;月月享好礼</li>
+            <li><input ontouchend="" onclick="onClick(this)" name="" type="checkbox" id="hd4" value="0"/>&nbsp;月月享好礼</li>
+
+            <div class="clear"></div>
+        </ul>
+    </div>
+</div>
+<div ontouchend="" onclick="submitData()" class="tijiao"><a href="#">确认提交</a></div>
+</body>
+</html>

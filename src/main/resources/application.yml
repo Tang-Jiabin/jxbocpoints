@@ -1,0 +1,69 @@
+server:
+  port: 8088
+  servlet:
+    context-path: /jxbocpoints
+  compression:
+    enabled: true
+    mime-types: application/javascript,text/css,application/json,application/xml,text/html,text/xml,text/plain
+  tomcat:
+    max-http-form-post-size: 1000MB
+
+
+spring:
+  aop:
+    auto: true
+  datasource:
+    name: mysql
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    #基本属性
+    url: jdbc:mysql://rm-2ze7eal7d73t74a8kvo.mysql.rds.aliyuncs.com:3306/jx_boc_points?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&autoReconnect=true
+    username: zy_tjb
+    password: zykj@tjb123
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    database-platform: com.zykj.pointsmall.MySQL5InnoDBDialectUtf8mb4
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 10000
+          batch_versioned_data: true
+        order_inserts: true
+        order_updates: true
+    open-in-view: false
+
+  redis:
+    host: 101.200.220.90
+    port: 6379
+    password: zykj@123
+    database: 11
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  data:
+    redis:
+      repositories:
+        enabled: false
+  servlet:
+    multipart:
+      max-file-size: -1
+      max-request-size: -1
+
+logging:
+  level:
+    root: info
+  file:
+    name: ./logs/pointsmall.log
+
+bank:
+  merchantNo: '104330248169112'
+  orderUrl: 'https://boc.pay.zhongyunkj.cn/jxbocpoints/pay/payRsps'
+  keyStorePath: '/secret/boc_qll_2021.pfx'
+  keystorePwd: '008126'
+  certificatePath: '/secret/zykey.cer'
+  storePath: '/secret/zykj.keystore'
+  alias: 'zykj'
+  storePw: 'zykj123zykj'
+  keyPw: 'zykj123zykj'
+  redisBuffersNumber: '50'

@@ -1,0 +1,323 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+    <link type="text/css" rel="stylesheet" href="css/shouji.css"/>
+    <link type="text/css" rel="stylesheet" href="css/css.css"/>
+    <script type="text/javascript" src="js/jquery1.42.min.js"></script>
+    <script type="text/javascript" src="js/tab.js"></script>
+    <meta name="viewport" content="width=device-width initial-scale=1.0 maximum-scale=1.0 user-scalable=yes"/>
+    <script type="text/javascript" src="js/common.js"></script>
+
+    <script type="text/javascript">
+        let orderVOList;
+        $(function () {
+            let index = getAddressBarParam("status")
+            init()
+            if (!isEmpty(index)) {
+                clickType(Number(index))
+            }
+            initHead()
+        })
+
+        function init() {
+            $.ajax({
+                cache: false,
+                type: "GET",
+                url: appData.domain + "/jxbocpoints/order/getDetails",
+                beforeSend: function (request) {
+                    request.setRequestHeader("X-Auth-Token", localStorage.getItem("token"));
+                },
+                data: {},
+                dataType: "json",
+                async: false,
+                success: function (result) {
+                    orderVOList = result.data
+                    clickType(1)
+                },
+                error: function (request) {
+                    alert("系统繁忙，请重试！");
+                }
+            });
+        }
+
+        function clickType(index) {
+            index === 1 ? $('#ps01').attr('class', 'sel6') : $('#ps01').attr('class', '')
+            index === 2 ? $('#ps02').attr('class', 'sel6') : $('#ps02').attr('class', '')
+            index === 3 ? $('#ps03').attr('class', 'sel6') : $('#ps03').attr('class', '')
+            index === 4 ? $('#ps04').attr('class', 'sel6') : $('#ps04').attr('class', '')
+
+            let html = ''
+            for (let i = 0; i < orderVOList.length; i++) {
+                let products = orderVOList[i].products
+                let status = orderVOList[i].orderStatus
+                let createDate = orderVOList[i].createDate
+                let orderNo = orderVOList[i].orderNo
+                let name = products.name
+                let imgUrl = products.imgUrl
+                let vip = products.vip
+                let price = products.price
+                let integral = products.integral
+                let vipPrice = products.vipPrice
+                let vipIntegral = products.vipIntegral
+                let productsId = products.productsId;
+                let type = products.typeId
+                let privilegeId = orderVOList[i].privilegeId
+                let pi = '小计：24元+1230积分'
+                if (vip === 3 || vip === 2) {
+                    pi = '小计：' + vipPrice + '元+' + vipIntegral + '积分'
+                } else {
+                    pi = '小计：' + price + '元+' + integral + '积分'
+                }
+                let link = ''
+                // 类别Id 1-兑换码 2-链接 3-实物 4-直充
+                if(Number(type) === 1 || Number(type) === 2 ){
+                    link = './orderDetails1.html?orderNo='+orderNo
+                }else if(Number(type) === 3 ){
+                    link = './orderDetails2.html?orderNo='+orderNo
+                }else if (Number(type) === 4){
+                    link = './orderDetails3.html?orderNo='+orderNo
+                }
+
+                if (index === 1) {
+                    if (Number(status) === 1) {
+                        html = html + '<li>' +
+                            '        <a href="#">' +
+                            '            <div class="dingdan_l"><img src="' + imgUrl + '"/></div>' +
+                            '            <div class="dingdan_m">' +
+                            '                <p class="dingdan_m1">' + name + '</p>' +
+                            '                <p class="dingdan_m3">领取日期：'+createDate+'</p>' +
+                            '                <p class="dingdan_m3">' + pi + '</p>' +
+                            '            </div>' +
+                            '            <div class="dingdan_r"><span><p></p>' +
+                            '                <p></p></span>×1' +
+                            '            </div>' +
+                            '            <div class="clear"></div>' +
+                            '        </a>' +
+                            '<div class="dingdan_caozo" ontouchend="pay(' + productsId + ','+privilegeId+')" onclick="pay(' + productsId + ','+privilegeId+')"><a href="javascript:void(0)" class="sel7">支付</a></div>' +
+                            '    </li>'
+                    }
+
+                } else if (index === 2) {
+                    if (Number(status) === 2) {
+                        html = html + '<li>' +
+                            '        <a href="'+link+'">' +
+                            '            <div class="dingdan_l"><img src="' + imgUrl + '"/></div>' +
+                            '            <div class="dingdan_m">' +
+                            '                <p class="dingdan_m1">' + name + '</p>' +
+                            '                <p class="dingdan_m3">领取日期：'+createDate+'</p>' +
+                            '                <p class="dingdan_m3">' + pi + '</p>' +
+                            '            </div>' +
+                            '            <div class="dingdan_r"><span><p></p>' +
+                            '                <p></p></span>×1' +
+                            '            </div>' +
+                            '            <div class="clear"></div>' +
+                            '        </a>' +
+                            '<div class="dingdan_caozo"><a href="'+link+'" class="sel7">查看</a></div>' +
+                            '    </li>'
+                    }
+
+                } else if (index === 3) {
+                    if (Number(status) === 4) {
+                        html = html + '<li>' +
+                            '        <a href="#">' +
+                            '            <div class="dingdan_l"><img src="' + imgUrl + '"/></div>' +
+                            '            <div class="dingdan_m">' +
+                            '                <p class="dingdan_m1">' + name + '</p>' +
+                            '                <p class="dingdan_m3">领取日期：'+createDate+'</p>' +
+                            '                <p class="dingdan_m3">' + pi + '</p>' +
+                            '            </div>' +
+                            '            <div class="dingdan_r"><span><p></p>' +
+                            '                <p></p></span>×1' +
+                            '            </div>' +
+                            '            <div class="clear"></div>' +
+                            '        </a>' +
+                            '    </li>'
+                    }
+                } else if (index === 4) {
+                    if (Number(status) === 5) {
+                        html = html + '<li>' +
+                            '        <a href="'+link+'">' +
+                            '            <div class="dingdan_l"><img src="' + imgUrl + '"/></div>' +
+                            '            <div class="dingdan_m">' +
+                            '                <p class="dingdan_m1">' + name + '</p>' +
+                            '                <p class="dingdan_m3">领取日期：'+createDate+'</p>' +
+                            '                <p class="dingdan_m3">' + pi + '</p>' +
+                            '            </div>' +
+                            '            <div class="dingdan_r"><span><p></p>' +
+                            '                <p></p></span>×1' +
+                            '            </div>' +
+                            '            <div class="clear"></div>' +
+                            '        </a>' +
+                            '<div class="dingdan_caozo"><a href="'+link+'" class="sel7">查看</a></div>' +
+                            '    </li>'
+                    }
+                }
+            }
+            $('#dingdan_list').html(html)
+        }
+
+        function initHead() {
+            /**
+             * 识别设备终端
+             */
+            window.terminal = (function () {
+                let u = navigator.userAgent;
+
+                return { //浏览器版本信息
+                    trident: u.indexOf('Trident') > -1,
+                    presto: u.indexOf('Presto') > -1,
+                    webKit: u.indexOf('AppleWebKit') > -1,
+                    gecko: !(-1 >= u.indexOf('KHTML') || !(u.indexOf('Gecko') > -1)),
+                    mobile: !!u.match(/AppleWebKit.*Mobile.*/),
+                    ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/),
+                    android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1,
+                    iPhone: u.indexOf('iPhone') > -1,
+                    iPad: u.indexOf('iPad') > -1,
+                    webApp: u.indexOf('Safari') > -1,
+                    weixin: !(-1 >= u.indexOf('MicroMessenger') || !u.replace(/.*(MicroMessenger\/[^\s]*).*/, "$1").replace(
+                        "MicroMessenger/", "")) || false,
+                    appVersion: u.indexOf('bocapp(') > -1 ? u.match(/bocapp\(\S+\)/)[0].slice(7, -1) : '3.0.0'
+                };
+            })()
+            /**
+             * 引入cordova
+             */
+            let script = document.createElement('script');
+
+            let pth = "https://ebsnew.boc.cn/bocphone/BocMerchant/" // 生产环境
+
+            if (window.terminal.iPhone) {
+                script.src = pth + 'paylib/ios.js'
+            } else if (window.terminal.android) {
+                script.src = pth + 'paylib/android.js'
+            } else {
+                alert('无法识别终端类型')
+                script.src = pth + 'paylib/android.js'
+            }
+            document.getElementsByTagName('head')[0].appendChild(script);
+        }
+
+        function pay(productId,privilegeId) {
+
+            $.ajax({
+                cache: false,
+                type: "POST",
+                url: appData.domain + "/jxbocpoints/pay/getPayParam",
+                beforeSend: function (request) {
+                    request.setRequestHeader("X-Auth-Token", localStorage.getItem("token"));
+                },
+                data: {productId: productId,'privilegeId':privilegeId},
+                dataType: "json",
+                async: false,
+                success: function (result) {
+
+                    if (result.status === 200) {
+
+                        let res = JSON.parse(result.data.data)
+                        let orderNo = result.msg
+                        window.c_plugins.merchantBridge.callPaymentControl(function (res) {
+
+                            if (res.orderStatus === '1') {
+                                //支付成功
+                                // paySuccess
+                                $.ajax({
+                                    url: appData.domain + "/jxbocpoints/pay/paySuccess",
+                                    type: 'get',
+                                    dataType: 'json',
+                                    beforeSend: function (request) {
+                                        request.setRequestHeader("X-Auth-Token", localStorage.getItem("token"));
+                                    },
+                                    data: {"orderNo": orderNo},
+                                    success: function (data) {
+                                        location.href = './paySuccess.html'
+                                    },
+                                    error: function (data) {
+                                    }
+                                })
+                            } else {
+
+                                // $.ajax({
+                                //     url: appData.domain + "/jxbocpoints/pay/cancelPay",
+                                //     type: 'get',
+                                //     dataType: 'json',
+                                //     beforeSend: function (request) {
+                                //         request.setRequestHeader("X-Auth-Token", localStorage.getItem("token"));
+                                //     },
+                                //     data: {"productId": productId},
+                                //     success: function (data) {
+                                //     },
+                                //     error: function (data) {
+                                //     }
+                                // })
+
+                            }
+
+                        }, function (err) {
+                            alert(err.message || err || '网络错误，请检查网络连接');
+                        }, res)
+
+                    } else {
+                        alert(result.msg)
+                    }
+
+
+                },
+                error: function (request) {
+                    alert("系统繁忙，请重试！");
+                }
+            });
+        }
+
+    </script>
+</head>
+
+<body>
+
+<div class="order_tab">
+    <a href="javascript:void(0)" class="sel6" id="ps01" ontouchend="clickType(1)" onclick="clickType(1)">待付款</a>
+    <a href="javascript:void(0)" id="ps02" ontouchend="clickType(2)" onclick="clickType(2)">已领取奖品</a>
+    <a href="javascript:void(0)" id="ps03" ontouchend="clickType(3)" onclick="clickType(3)">已取消</a>
+    <a href="javascript:void(0)" id="ps04" ontouchend="clickType(4)" onclick="clickType(4)">已完成</a>
+    <div class="clear"></div>
+</div>
+<ul id="dingdan_list">
+    <!--    <li>-->
+    <!--        <a href="#">-->
+    <!--            <div class="dingdan_l"><img src="images/dingdan1.png"/></div>-->
+    <!--            <div class="dingdan_m">-->
+    <!--                <p class="dingdan_m1">京东E卡</p>-->
+    <!--                <p class="dingdan_m2">&nbsp;</p>-->
+    <!--                <p class="dingdan_m3">小计：24元+1230积分</p>-->
+    <!--            </div>-->
+    <!--            <div class="dingdan_r"><span><p>剩余时间</p>-->
+    <!--                <p>30：30</p></span>×1-->
+    <!--            </div>-->
+    <!--            <div class="clear"-->
+    <!--            ></div>-->
+    <!--        </a>-->
+    <!--        <div class="dingdan_caozo"><a href="#">删除</a><a href="#" class="sel7">评价</a></div>-->
+    <!--    </li>-->
+    <!--    <li>-->
+    <!--        <a href="#">-->
+    <!--            <div class="dingdan_l"><img src="images/dingdan1.png"/></div>-->
+    <!--            <div class="dingdan_m">-->
+    <!--                <p class="dingdan_m1">京东E卡</p>-->
+    <!--                <p class="dingdan_m2">&nbsp;</p>-->
+    <!--                <p class="dingdan_m3">小计：24元+1230积分</p>-->
+    <!--            </div>-->
+    <!--            <div class="dingdan_r"><span><p>剩余时间</p>-->
+    <!--<p>30：30</p></span>×1-->
+    <!--            </div>-->
+    <!--            <div class="clear"-->
+    <!--            ></div>-->
+    <!--        </a>-->
+    <!--        <div class="dingdan_caozo"><a href="#" class="sel7">申请进度</a></div>-->
+    <!--    </li>-->
+</ul>
+
+
+</body>
+</html>

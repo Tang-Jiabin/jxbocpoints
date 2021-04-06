@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>修改商品</title>
+    <link rel="stylesheet" href="./static/common/layui/css/layui.css">
+    <link rel="stylesheet" href="./static/admin/css/style.css">
+    <script src="./static/common/layui/layui.js"></script>
+    <script src="./static/common/jquery-3.3.1.min.js"></script>
+    <script src="./static/common/vue.min.js"></script>
+    <script src="../js/common.js"></script>
+    <script src="../js/xlsx.full.min.js" charset="utf-8"></script>
+    <script type="text/javascript">
+        let productsId
+        let prizeInfoList
+        let codeFile
+
+
+        $(function () {
+            productsId = getAddressBarParam('pid')
+            if (isEmpty(productsId)) {
+                layer.closeAll()
+            } else {
+                getGoodsInfo(productsId)
+            }
+            $('#upload').change(function (e) {
+
+                let oFReader = new FileReader();
+                let file = e.target.files[0];
+                oFReader.readAsDataURL(e.target.files[0]);
+                oFReader.onload = function (oFREvent) {
+                    $('#fileLink').html(file.name)
+                };
+                codeFile = e.target.files[0]
+            })
+        })
+
+        function getGoodsInfo(productsId) {
+            $.ajax({
+                cache: false,
+                type: "GET",
+                url: appData.domain + "/jxbocpoints/admin/getGoodsTypeInfo",
+                beforeSend: function (request) {
+                    request.setRequestHeader("X-Auth-Token", localStorage.getItem("p_admin_token"));
+                },
+                data: {productsId: productsId},
+                dataType: "json",
+                async: false,
+                success: function (result) {
+
+                    if (result.status !== 200) {
+                        alert(result.msg)
+                        if (result.status === 401) {
+                            window.location.href = "./login.html";
+                        }
+                        return;
+                    }
+                    setGoodsInfo(result.data)
+                    console.log(result.data)
+                },
+                error: function () {
+                    alert("系统繁忙，请重试！");
+                }
+            });
+        }
+
+        function setGoodsInfo(data) {
+            let productsId = data.productsId
+            let name = data.name;
+            let money = data.money;
+            let number = data.number;
+            let price = data.price;
+            let integral = data.integral;
+            prizeInfoList = data.prizeInfoList;
+
+            $('#typeName').val(name)
+            $('#money').val(money)
+            $('#number').val(number)
+            $('#price').val(price)
+            $('#integral').val(integral)
+            setCodeTable()
+        }
+
+        function setCodeTable() {
+            layui.use('table', function () {
+                let table = layui.table;
+                //监听单元格编辑
+                table.on('edit(code_table)', function (obj) {
+                    var value = obj.value //得到修改后的值
+                        , data = obj.data //得到所在行所有键值
+                        , field = obj.field; //得到字段
+                    obj.field = value
+                });
+
+                //监听行工具事件
+                table.on('tool(code_table)', function (obj) {
+                    var data = obj.data;
+                    console.log(data)
+                    if (obj.event === 'del') {
+                        layer.confirm('确认删除吗', function (index) {
+                            delCode(data.prizeId)
+                            layer.close(index)
+                        });
+                    }
+
+                });
+                //展示已知数据
+                table.render({
+                    elem: '#code_table'
+                    , cellMinWidth: 100
+                    , cols: [[ //标题栏
+                        {field: 'prizeId', title: 'ID', hide: true, sort: true}
+                        , {field: 'code', title: '兑换码', align: 'center'}
+                        , {field: 'customerId', title: '客户号', sort: true, align: 'center'}
+                        , {fixed: 'right', title: '操作', toolbar: '#del', align: 'center'}
+                    ]]
+                    , data: prizeInfoList
+                    , skin: 'line' //表格风格
+                    , even: true
+                    , page: true //是否显示分页
+                    , limits: [5, 7, 10]
+                    , limit: 10 //每页默认显示的数量
+                });
+            });
+
+        }
+
+        function delCode(prizeId) {
+            $.ajax({
+                cache: false,
+                type: "POST",
+                data: {prizeId: prizeId},
+                url: appData.domain + "/jxbocpoints/admin/delCode",
+                beforeSend: function (request) {
+                    request.setRequestHeader("X-Auth-Token", localStorage.getItem("p_admin_token"));
+                },
+                dataType: "json",
+                async: false,
+                success: function (result) {
+
+                    if (result.status !== 200) {
+                        alert(result.msg)
+                        if (result.status === 401) {
+                            window.location.href = "./login.html";
+                        }
+                        return;
+                    }
+
+                    for (let i = 0; i < prizeInfoList.length; i++) {
+                        if (prizeInfoList[i].prizeId === prizeId) {
+                            prizeInfoList.splice(i, 1)
+                        }
+                    }
+                    setCodeTable()
+
+                },
+                error: function () {
+                    alert("系统繁忙，请重试！");
+                }
+            });
+        }
+
+        function addCode() {
+            let code = $('#code').val();
+            $.ajax({
+                cache: false,
+                type: "POST",
+                data: {code: code, productsId: productsId},
+                url: appData.domain + "/jxbocpoints/admin/addCode",
+                beforeSend: function (request) {
+                    request.setRequestHeader("X-Auth-Token", localStorage.getItem("p_admin_token"));
+                },
+                dataType: "json",
+                async: false,
+                success: function (result) {
+
+                    if (result.status !== 200) {
+                        alert(result.msg)
+                        if (result.status === 401) {
+                            window.location.href = "./login.html";
+                        }
+                        return;
+                    }
+                    alert("添加成功")
+                    location.reload()
+
+                },
+                error: function () {
+                    alert("系统繁忙，请重试！");
+                }
+            });
+
+        }
+
+
+
+        function bathAddCode() {
+
+            let data = new FormData()
+            data.append('productsId', productsId);
+            data.append('codeExcel', codeFile);
+
+            $.ajax({
+                url: appData.domain + "/jxbocpoints/admin/bathAddCode",
+                beforeSend: function (request) {
+                    request.setRequestHeader("X-Auth-Token", localStorage.getItem("p_admin_token"));
+                },
+                method: 'post',
+                data: data,
+                type: "POST",
+                contentType: false,
+                processData: false,
+                success: function (result) {
+
+                    if (result.status !== 200) {
+                        alert(result.msg)
+                        if (result.status === 401) {
+                            window.location.href = "./login.html";
+                        }
+                        return;
+                    }
+                    alert("添加成功")
+                    location.reload()
+
+                },
+                error: function () {
+                    alert("系统繁忙，请重试！");
+                }
+            });
+        }
+
+
+        function editType() {
+            let name = $('#typeName').val()
+            let money = $('#money').val()
+            let number = $('#number').val()
+            let price = $('#price').val()
+            let integral = $('#integral').val()
+
+            $.ajax({
+                url: appData.domain + "/jxbocpoints/admin/editType",
+                beforeSend: function (request) {
+                    request.setRequestHeader("X-Auth-Token", localStorage.getItem("p_admin_token"));
+                },
+                method: 'post',
+                data: {productsId:productsId,name:name,money:money,number:number,price:price,integral:integral},
+                type: "POST",
+                success: function (result) {
+
+                    if (result.status !== 200) {
+                        alert(result.msg)
+                        if (result.status === 401) {
+                            window.location.href = "./login.html";
+                        }
+                        return;
+                    }else {
+                        bathAddCode()
+                    }
+
+
+                },
+                error: function () {
+                    alert("系统繁忙，请重试！");
+                }
+            });
+        }
+
+    </script>
+</head>
+<body>
+<div id="app">
+    <!--顶栏-->
+    <!--    <header>-->
+    <!--        <h1 v-text="webname"></h1>-->
+    <!--        <div class="breadcrumb">-->
+    <!--            <i class="layui-icon">&#xe715;</i>-->
+    <!--            <ul>-->
+    <!--                <li v-for="vo in address">-->
+    <!--                    <a  v-text="vo.name" :href="vo.url" ></a> <span>/</span>-->
+    <!--                </li>-->
+    <!--            </ul>-->
+    <!--        </div>-->
+    <!--    </header>-->
+
+    <div class="main">
+        <!--左栏-->
+        <!--        <div class="left">-->
+        <!--            <ul class="cl" >-->
+        <!--                &lt;!&ndash;顶级分类&ndash;&gt;-->
+        <!--                <li v-for="vo,index in menu" :class="{hidden:vo.hidden}">-->
+        <!--                    <a href="javascript:;"  :class="{active:vo.active}"  @click="onActive(index)">-->
+        <!--                        <i class="layui-icon" v-html="vo.icon"></i>-->
+        <!--                        <span v-text="vo.name"></span>-->
+        <!--                        <i class="layui-icon arrow" v-show="vo.url.length==0">&#xe61a;</i> <i v-show="vo.active" class="layui-icon active">&#xe623;</i>-->
+        <!--                    </a>-->
+        <!--                    &lt;!&ndash;子级分类&ndash;&gt;-->
+        <!--                    <div v-for="vo2,index2 in vo.list">-->
+        <!--                        <a href="javascript:;" :class="{active:vo2.active}" @click="onActive(index,index2)" v-text="vo2.name"></a>-->
+        <!--                        <i v-show="vo2.active" class="layui-icon active">&#xe623;</i>-->
+        <!--                    </div>-->
+        <!--                </li>-->
+        <!--            </ul>-->
+        <!--        </div>-->
+        <!--右侧-->
+        <div class="right">
+
+            <fieldset class="layui-elem-field layui-field-title">
+                <legend>修改分类</legend>
+            </fieldset>
+
+            <form class="layui-form">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">分类名称</label>
+                    <div class="layui-input-inline">
+                        <input id="typeName" type="text" placeholder="请输入" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">产品价值</label>
+                    <div class="layui-input-inline">
+                        <input id="money" type="number" placeholder="请输入" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">数量</label>
+                    <div class="layui-input-inline">
+                        <input id="number" type="number" placeholder="请输入" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">购买价格</label>
+                    <div class="layui-input-inline">
+                        <input id="price" type="text" placeholder="请输入" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">购买积分</label>
+                    <div class="layui-input-inline">
+                        <input id="integral" type="number" placeholder="请输入" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">添加兑换码</label>
+                    <div class="layui-inline">
+                        <div class="layui-inline">
+                            <input id="code" type="text" placeholder="兑换码" class="layui-input"></div>
+                        <div class="layui-inline">
+                            <a class="layui-btn layui-btn-normal" ontouchend="" onclick="addCode()">添加</a>
+                        </div>
+                        <div class="layui-inline">
+                            <a class="layui-btn layui-btn-normal" ontouchend="" onclick="upload.click()">批量添加</a>
+                            <input type="file" name="upload" id="upload" style="display: none;"/>
+                        </div>
+                        <div class="layui-inline">
+                            <a id="fileLink" ontouchend="" onclick="upload.click()"></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">兑换码</label>
+                    <div class="layui-inline">
+                        <table id="code_table" class="layui-table layui-inline" lay-filter="code_table">
+                            <script type="text/html" id="del">
+                                <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+                            </script>
+                        </table>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <a type="button" class="layui-btn" ontouchend="" onclick="editType()">立即提交</a>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+<script src="./static/admin/js/config.js"></script>
+<script src="./static/admin/js/script.js"></script>
+</body>
+</html>

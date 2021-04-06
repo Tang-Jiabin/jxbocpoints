@@ -1,0 +1,102 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+    <link type="text/css" rel="stylesheet" href="css/shouji.css"/>
+    <link type="text/css" rel="stylesheet" href="css/css.css"/>
+    <script type="text/javascript" src="js/jquery1.42.min.js"></script>
+    <meta name="viewport" content="width=device-width initial-scale=1.0 maximum-scale=1.0 user-scalable=yes"/>
+    <script type="text/javascript" src="js/common.js"></script>
+
+    <script type="text/javascript">
+
+        $(function () {
+
+            $.ajax({
+                cache: false,
+                type: "GET",
+                url: appData.domain + "/jxbocpoints/user/getAddress",
+                beforeSend: function (request) {
+                    request.setRequestHeader("X-Auth-Token", localStorage.getItem("token"));
+                },
+                data: {},
+                dataType: "json",
+                async: false,
+                success: function (result) {
+                    if (result.status === 200) {
+                        setAddress(result.data)
+                    }
+                },
+                error: function (request) {
+                    alert("系统繁忙，请重试！");
+                }
+            });
+        })
+
+        function addAddress() {
+            let name = $('#name').val()
+            let phone = $('#phone').val()
+            let region = $('#region').val()
+            let address = $('#address').val()
+
+            if (isEmpty(name) || isEmpty(phone) || isEmpty(region) || isEmpty(address)) {
+                alert("请完整填写地址信息");
+                return;
+            }
+            $.ajax({
+                cache: false,
+                type: "GET",
+                url: appData.domain + "/jxbocpoints/user/addAddress",
+                beforeSend: function (request) {
+                    request.setRequestHeader("X-Auth-Token", localStorage.getItem("token"));
+                },
+                data: {name: name, phone: phone, region: region, address: address},
+                dataType: "json",
+                async: false,
+                success: function (result) {
+                    if (result.status === 200) {
+                        alert("保存成功")
+                        setAddress(result.data)
+                    } else {
+                        alert(result.msg)
+                    }
+                },
+                error: function (request) {
+                    alert("系统繁忙，请重试！");
+                }
+            });
+        }
+
+        function setAddress(data) {
+            $('#name').val(data.name)
+            $('#phone').val(data.phone)
+            $('#region').val(data.region)
+            $('#address').val(data.address)
+        }
+    </script>
+</head>
+
+<body style="background-color:#f5f5f5">
+
+<div class="home7">
+    <ul id="dizhi_list">
+        <li><span>姓名:  </span><input id="name" name="" type="text" class="txt3" placeholder="请输入姓名"></li>
+        <li><span>联系电话:    </span><input id="phone" name="" type="text" class="txt3" placeholder="请联系电话"></li>
+        <li><span>所在地区:  </span>
+            <textarea id="region" name="" cols="" rows="" class="txt3" placeholder="例如：北京市西城区"></textarea>
+        </li>
+        <li><span>详细地址:</span><input id="address" name="" type="text" class="txt3" placeholder="例如：西便门西里1—1708"></li>
+    </ul>
+</div>
+<!--<div class="home7">-->
+<!--    <ul id="dizhi_list">-->
+<!--        <li style="text-align:right; border:none"><span>设为默认:  </span><input name="" type="radio" value=""/></li>-->
+
+<!--    </ul>-->
+<!--</div>-->
+
+<div class="baocundizhi" ontouchend="addAddress()" onclick="addAddress()"><a href="#">保存地址</a></div>
+</body>
+</html>

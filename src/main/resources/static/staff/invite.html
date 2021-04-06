@@ -1,0 +1,59 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>排行榜</title>
+    <link type="text/css" rel="stylesheet" href="css/shouji.css"/>
+    <meta name="viewport" content="width=device-width initial-scale=1.0 maximum-scale=1.0 user-scalable=yes"/>
+    <script type="text/javascript" src="js/jquery1.42.min.js"></script>
+    <script type="text/javascript" src="../js/common.js"></script>
+
+    <script type="text/javascript">
+        function accept(){
+            let share = getAddressBarParam("share")
+            if(isEmpty(share)){
+                alert("邀请链接失效");
+                return ;
+            }
+            let phone = $('#phone').val()
+            if(isEmpty(phone)){
+                alert("请填写正确手机号")
+                return ;
+            }
+
+            $.ajax({
+                cache: false,
+                type: "GET",
+                url: appData.domain + "/jxbocpoints/user/accept",
+                beforeSend: function (request) {
+                    request.setRequestHeader("X-Auth-Token", localStorage.getItem("token"));
+                },
+                data: {share:share,phone:phone},
+                dataType: "json",
+                async: false,
+                success: function (result) {
+                    if (result.status === 200) {
+                        alert("接受邀请成功")
+                    }else {
+                        alert(result.msg)
+                    }
+                },
+                error: function (request) {
+                    alert("系统繁忙，请重试！");
+                }
+            });
+        }
+    </script>
+</head>
+
+<body style="background-color:#ffdfd4">
+
+<div class="yaoqing_banner"><img src="images/yaoqing_03.jpg"/>
+    <div class="yaoqing_c">
+        <p><input id="phone" name="" type="text" placeholder="请输入手机号码" class="txt2"/></p>
+        <p><a href="javascript:accept()"><img src="images/jieshou.png"/></a></p></div>
+</div>
+
+</body>
+</html>

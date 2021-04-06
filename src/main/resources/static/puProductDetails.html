@@ -1,0 +1,681 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+    <link type="text/css" rel="stylesheet" href="css/shouji.css"/>
+    <link type="text/css" rel="stylesheet" href="css/css.css"/>
+    <link rel="stylesheet" href="css/swiper.min.css">
+    <meta name="viewport" content="width=device-width initial-scale=1.0 maximum-scale=1.0 user-scalable=yes"/>
+    <script type="text/javascript" src="js/jquery1.42.min.js"></script>
+    <script type="text/javascript" src="js/jquery.Spinner.js"></script>
+    <script type="text/javascript" src="js/tab.js"></script>
+    <script type="text/javascript" src="js/common.js"></script>
+
+    <script type="text/javascript">
+        let productList;
+        let productId;
+        let integral = 0;
+        let privilegeId = 0;
+        $(function () {
+
+            // init();
+
+            gzHide();
+
+            getProductDetails(getAddressBarParam("productId"))
+
+            $("#c").Spinner({value: 1, max: 1, min: 1,})
+        });
+
+        function getProductDetails(productId) {
+
+            if (isEmpty(productId)) {
+                history.back(-1)
+            }
+
+            $.ajax({
+                cache: false,
+                type: "GET",
+                url: appData.domain + "/jxbocpoints/products/getProductDetails",
+                beforeSend: function (request) {
+                    request.setRequestHeader("X-Auth-Token", localStorage.getItem("token"));
+                },
+                data: {productId: productId},
+                dataType: "json",
+                async: false,
+                success: function (result) {
+                    if (result.status === 200) {
+
+                        $('#name').html(result.data.name)
+                        $('#detailImg').attr('src', result.data.detailImgUrl)
+
+                        productList = result.data.subProductList
+                        let prLength = productList.length
+
+
+                        let spec = '<span>规格：</span>'
+
+                        for (let i = 0; i < prLength; i++) {
+                            let name = productList[i].name
+                            spec = spec + '<a id="type' + i + '" ontouchend="clickType(' + i + ')" onclick="clickType(' + i + ')">' + name + '</a>'
+                        }
+                        spec = spec + '<div class="clear"></div>'
+                        $('#spec').html(spec)
+
+                        clickType(0)
+                        gzShow(result.data.name)
+                    } else {
+                        history.back(-1)
+                    }
+                },
+                error: function (request) {
+                    alert("系统繁忙，请重试！");
+                }
+            });
+        }
+
+        function clickType(index) {
+            for (let i = 0; i < productList.length; i++) {
+                if (index === i) {
+                    productId = productList[i].productsId
+                    $('#type' + i).attr('class', 'sel5')
+                    selectGoods(productList[i])
+                } else {
+                    $('#type' + i).attr('class', '')
+                }
+            }
+        }
+
+
+        function selectGoods(data) {
+            console.log(data)
+
+            $('#type').html(data.name)
+            $('#money').html('原价：' + data.money + '元')
+            if (data.vip === 3) {
+                integral = Number(data.vipIntegral)
+                $('#price').html('权溢价：' + data.vipPrice + '元+' + data.vipIntegral + '积分&nbsp;<strong id="number">剩余' + data.number + '份</strong>')
+                $('#payPrice').html('' + data.vipPrice + '元+' + data.vipIntegral + '积分')
+            } else {
+                integral = Number(data.integral)
+                $('#price').html('权溢价：' + data.price + '元+' + data.integral + '积分&nbsp;<strong id="number">剩余' + data.number + '份</strong>')
+                $('#payPrice').html('' + data.price + '元+' + data.integral + '积分')
+            }
+        }
+
+        function gzHide() {
+
+            $('#aqy').hide()
+            $('#bgy').hide()
+            $('#bsk').hide()
+            $('#ddcx').hide()
+            $('#elm').hide()
+            $('#hf').hide()
+            $('#jdek').hide()
+            $('#kdj').hide()
+            $('#kwyy').hide()
+            $('#mgtv').hide()
+            $('#mtwm').hide()
+            $('#nxdc').hide()
+            $('#txsp').hide()
+            $('#txyd').hide()
+            $('#tmcs').hide()
+            $('#xmly').hide()
+            $('#xbk').hide()
+            $('#yksp').hide()
+        }
+
+
+        function gzShow(name) {
+            if (name.indexOf("爱奇艺") !== -1) {
+                $('#aqy').show()
+            }
+            if (name.indexOf("百果园") !== -1) {
+                $('#bgy').show()
+            }
+            if (name.indexOf("必胜客") !== -1) {
+                $('#bsk').show()
+            }
+            if (name.indexOf("滴滴" )!== -1) {
+                $('#ddcx').show()
+            }
+            if (name.indexOf("饿了么" )!== -1) {
+                $('#elm').show()
+            }
+            if (name.indexOf("移动" )!== -1 || name.indexOf("联通" )!== -1 ||name.indexOf("电信" )!== -1 ) {
+                $('#hf').show()
+            }
+            if (name.indexOf("京东" )!== -1) {
+                $('#jdek').show()
+            }
+            if (name.indexOf("肯德基" )!== -1) {
+                $('#kdj').show()
+            }
+            if (name.indexOf("酷我音乐" )!== -1) {
+                $('#kwyy').show()
+            }
+            if (name.indexOf("芒果" )!== -1) {
+                $('#mgtv').show()
+            }
+            if (name.indexOf("美团" )!== -1) {
+                $('#mtwm').show()
+            }
+            if (name.indexOf("奈雪" )!== -1) {
+                $('#nxdc').show()
+            }
+            if (name.indexOf("腾讯视频" )!== -1) {
+                $('#txsp').show()
+            }
+            if (name.indexOf("腾讯阅读" )!== -1) {
+                $('#txyd').show()
+            }
+            if (name.indexOf("天猫" )!== -1) {
+                $('#tmcs').show()
+            }
+            if (name.indexOf("喜马拉雅" )!== -1) {
+                $('#xmly').show()
+            }
+            if (name.indexOf("星巴克" )!== -1) {
+                $('#xbk').show()
+            }
+            if (name.indexOf("优酷" )!== -1) {
+                $('#yksp').show()
+            }
+            if (name.indexOf("家乐福" )!== -1) {
+                $('#jlf').show()
+            }
+            if (name.indexOf("沃尔玛" )!== -1) {
+                $('#wem').show()
+            }
+        }
+
+        function queren() {
+
+            $.ajax({
+                cache: false,
+                type: "POST",
+                url: appData.domain + "/jxbocpoints/pay/getPayParam",
+                beforeSend: function (request) {
+                    request.setRequestHeader("X-Auth-Token", localStorage.getItem("token"));
+                },
+                data: {productId: productId,'privilegeId':privilegeId},
+                dataType: "json",
+                async: false,
+                success: function (result) {
+
+                    if (result.status === 200) {
+
+                        let res = JSON.parse(result.data.data)
+                        let orderNo = result.msg
+                        window.c_plugins.merchantBridge.callPaymentControl(function (res) {
+
+                            if (res.orderStatus === '1') {
+                                //支付成功
+                                // paySuccess
+                                $.ajax({
+                                    url: appData.domain + "/jxbocpoints/pay/paySuccess",
+                                    type: 'get',
+                                    dataType: 'json',
+                                    beforeSend: function (request) {
+                                        request.setRequestHeader("X-Auth-Token", localStorage.getItem("token"));
+                                    },
+                                    data: {"orderNo": orderNo},
+                                    success: function (data) {
+                                        location.href = './paySuccess.html'
+                                    },
+                                    error: function (data) {
+                                    }
+                                })
+                            } else {
+
+                                // $.ajax({
+                                //     url: appData.domain + "/jxbocpoints/pay/cancelPay",
+                                //     type: 'get',
+                                //     dataType: 'json',
+                                //     beforeSend: function (request) {
+                                //         request.setRequestHeader("X-Auth-Token", localStorage.getItem("token"));
+                                //     },
+                                //     data: {"productId": productId},
+                                //     success: function (data) {
+                                //     },
+                                //     error: function (data) {
+                                //     }
+                                // })
+
+                            }
+
+                        }, function (err) {
+                            alert(err.message || err || '网络错误，请检查网络连接');
+                        }, res)
+
+                    } else {
+                        alert(result.msg)
+                    }
+
+
+                },
+                error: function (request) {
+                    alert("系统繁忙，请重试！");
+                }
+            });
+        }
+
+        function init() {
+            /**
+             * 识别设备终端
+             */
+            window.terminal = (function () {
+                let u = navigator.userAgent;
+
+                return { //浏览器版本信息
+                    trident: u.indexOf('Trident') > -1,
+                    presto: u.indexOf('Presto') > -1,
+                    webKit: u.indexOf('AppleWebKit') > -1,
+                    gecko: !(-1 >= u.indexOf('KHTML') || !(u.indexOf('Gecko') > -1)),
+                    mobile: !!u.match(/AppleWebKit.*Mobile.*/),
+                    ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/),
+                    android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1,
+                    iPhone: u.indexOf('iPhone') > -1,
+                    iPad: u.indexOf('iPad') > -1,
+                    webApp: u.indexOf('Safari') > -1,
+                    weixin: !(-1 >= u.indexOf('MicroMessenger') || !u.replace(/.*(MicroMessenger\/[^\s]*).*/, "$1").replace(
+                        "MicroMessenger/", "")) || false,
+                    appVersion: u.indexOf('bocapp(') > -1 ? u.match(/bocapp\(\S+\)/)[0].slice(7, -1) : '3.0.0'
+                };
+            })()
+            /**
+             * 引入cordova
+             */
+            let script = document.createElement('script');
+
+            let pth = "https://ebsnew.boc.cn/bocphone/BocMerchant/" // 生产环境
+
+            if (window.terminal.iPhone) {
+                script.src = pth + 'paylib/ios.js'
+            } else if (window.terminal.android) {
+                script.src = pth + 'paylib/android.js'
+            } else {
+                alert('无法识别终端类型')
+                script.src = pth + 'paylib/android.js'
+            }
+            document.getElementsByTagName('head')[0].appendChild(script);
+        }
+
+
+    </script>
+    <style>
+        .swiper-container {
+            width: 94%;
+            height: 100%;
+            display: flex;
+            margin-top: 0px;
+            margin-right: auto;
+            margin-bottom: 0px;
+            margin-left: auto;
+            padding-top: 10px;
+            padding-bottom: 30px;
+            padding-right: 0%;
+            padding-left: 0%;
+            position: relative;
+        }
+
+        .swiper-slide {
+            text-align: center;
+            font-size: 18px;
+            /* Center slide text vertically */
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: -webkit-flex;
+            -webkit-box-pack: center;
+            -ms-flex-pack: center;
+            -webkit-justify-content: center;
+            justify-content: center;
+            -webkit-box-align: center;
+            -ms-flex-align: center;
+            -webkit-align-items: center;
+            align-items: center;
+            margin: 0px;
+            padding-top: 0%;
+            padding-right: 0%;
+            padding-bottom: 0%;
+            padding-left: 0%;
+            width: 33%;
+        }
+
+        .swiper-button-prev {
+            background-image: url(images/left.png) !important;
+            background-size: 80%;
+            margin-top: -3%;
+        }
+
+        /*改变了颜色和加粗的样式*/
+        .swiper-button-next {
+            background-image: url(images/right.png) !important;
+            background-size: 80%;
+            margin-top: -3%;
+        }
+    </style>
+    <script>
+
+        $(document).ready(function () {
+            $("#huodongguize").click(function () {
+                $(".huodongguize_bg").show();
+            });
+            $(".hide").click(function () {
+                $(".huodongguize_bg").hide();
+                $(".duihuan_bg").hide();
+            });
+            $("#luruchenggong").click(function () {
+                let sintegral = localStorage.getItem('integral')
+                if (!isEmpty(sintegral)) {
+                    if (sintegral < integral) {
+                        $('#buzu').show();
+                        $('#duihuan').hide()
+                    } else {
+                        $('#buzu').hide();
+                        $('#duihuan').show()
+                    }
+                } else {
+                    $('#buzu').show();
+                    $('#duihuan').hide()
+                }
+                $(".luruchenggong_bg").show();
+            });
+            $("#hide2").click(function () {
+                $(".luruchenggong_bg").hide();
+            });
+        });</script>
+
+<!--    <style type="text/css">-->
+<!--        .huodongguize_c{-->
+<!--            top: 150px;-->
+<!--        }-->
+
+<!--    </style>-->
+</head>
+
+
+<body style="background-color:#f5f5f5; padding-bottom:60px;">
+
+<div class="lipin_pic"> <!-- Swiper -->
+    <div class="swiper-container">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide"><a href="javascript:void(0)"><img id="detailImg" src=""/></a></div>
+        </div>
+        <!-- Add Pagination -->
+        <div class="swiper-pagination"></div>
+    </div>
+
+    <!-- Swiper JS -->
+    <script src="js/swiper.min.js"></script>
+
+    <!-- Initialize Swiper -->
+    <script>
+        var swiper = new Swiper('.swiper-container', {
+            pagination: '.swiper-pagination',
+            nextButton: '.swiper-button-next',
+            prevButton: '.swiper-button-prev',
+            slidesPerView: 1,
+            paginationClickable: true,
+            spaceBetween: 30,
+            loop: false
+        });
+    </script>
+</div>
+<div class="lipin_t1"><span><a href="javascript:void(0)" id="huodongguize">使用规则></a></span>
+    <name id='name'>腾讯视频</name>
+    <type id="type"></type>
+</div>
+<div class="lipin_t2">
+    <p><strong id="money">原价：20元</strong></p>
+    <p id="price">权溢价：0.01元+99积分&nbsp;&nbsp;</p>
+</div>
+<div class="lipin_t3">
+    <div class="guige" id="spec">
+        <!--        <span>规格：</span>-->
+        <!--        <a href="javascript:void(0)" class="sel5">会员月卡</a>-->
+        <!--        <a href="#">会员季卡</a>-->
+        <!--        <div class="clear"></div>-->
+    </div>
+    <!--第二种规格--
+  <div class="guige"><span>规格：</span><a href="javascript:void(0)" class="sel5">10元</a><a href="#">10元</a><a href="#">10元</a><br /><a href="#">10元</a><a href="#">10元</a><a href="#">10元</a><div class="clear"></div></div>
+  <!--第二种规格-->
+    <span>
+  x1
+  </span>数量：
+</div>
+<div class="lipin_c">
+    <p><strong>服务说明</strong></p>
+    <p>
+    <p>1.兑换成功后，可在个人中心—我的订单中查看，并单击提取卡
+        密获得兑换码。
+    <p>活动中如遇问题请拨打客户电话400-650-6038咨询（9：00-18：00）</p>
+</div>
+<div class="duihuan"><span> <a href="javascript:void(0)" id="luruchenggong">立即兑换</a>
+    <!--暂时无货--
+  <a href="javascript:void(0)"  style="background-color:#f7a229">暂时无货</a>
+  <!-->
+  </span>实际支付：<span id="payPrice">0.01元+99积分</span>
+</div>
+<!--活动说明-->
+<div class="huodongguize_bg" style="display:none;">
+    <div class="huodongguize">
+        <div class="huodongguize_img"><img src="images/shiyongguize.png"></div>
+
+        <div class="huodongguize_c" id="txsp" style="display:none;">
+            <p><span>①</span>腾讯视频会员将以兑换码的形式发送，可在【个人中心】-【我的订单】查看兑换码。
+            <p><span>②</span>用户需下载腾讯视频APP或打开网页版进入腾讯视频平台，注册并登陆腾讯视频账号；
+            <p><span>③</span>点击右上方三角形VIP图标， 进入会员管理页面，点击“兑换VIP会员”；
+            <p><span>④</span>输入兑换码、手机号和验证码，点击“完成兑换”；
+            <p>腾讯视频会员兑换成功。
+            <p>注： 
+            <p>1体验月卡、季卡、年卡：兑换后立即获得相应时长；
+            <p>2优惠券兑换后立即到账，在开通腾讯视频VIP时可直接使 用；
+            <p>3已经使用话费开通了腾讯视频VIP包月服务的用户,该次兑 换的会员时长将在话费包月到期后生效；
+            <p>4兑换需验证手机号。如遇到手机号被其他账号绑定，可点 击 http://t.cn/EGbgqhj 登录您的账号绑定手机，替换手 机号原绑定账号。
+        </div>
+
+        <div class="huodongguize_c" id="aqy" style="display:none;">
+            <p><span>①</span>进入“爱奇艺”APP，登录/注册爱奇艺会员
+            <p><span>②</span>用在【我的】页面：续费VIP——立即开通——激活码兑换——输入激活码——输入验证码——激活成功
+        </div>
+
+        <div class="huodongguize_c" id="jdek" style="display:none;">
+            <p><span>①</span>京东E卡将以卡密的形式发送用户，可在【个人中心】-【我的订单】获得卡密。
+            <p><span>②</span>下载京东客户端，注册并登陆后，点击【我的】→【我的钱包】→【礼品卡】→【绑定新卡】→【输入京东e卡的卡密】→【绑定】；
+            <p><span>③</span>用户可在京东APP【我的钱包】中“礼品卡”查看已经获取的京东E卡种类、面值、有效期；
+            <p><span>④</span>使用京东APP选择京东自营产品支付时可选择使用E卡抵扣金额。
+            <p><span>⑤</span>使用期限截一般为2-3年，请您于兑换后尽快使用完。过期不退不换，逾期作废失效；
+            <p><span>⑥</span>本卡仅限京东商城购买部分“京东自营”商品时使用，不可兑换现金，不记名，不挂失，不退货；
+        </div>
+
+        <div class="huodongguize_c" id="bgy" style="display:none;">
+            <p><span>①</span>百果园代金券将以兑换码的形式发送用户，可在【个人中心】-【我的订单】页面查看代金券详情；
+            <p><span>②</span>电子代金券18位数字，无使用门槛，可多张叠加使用，需一次性消费，可自由设置有效期，线下门店通用，暂不支持线上APP消费
+        </div>
+
+        <div class="huodongguize_c" id="bsk" style="display:none;">
+            <p><span>①</span>必胜客代金券将以链接的形式发送用户，可在【个人中心】-【我的订单】页面查看代金券详情；
+            <p><span>②</span>用户在必胜客代金券详情点击链接获取代金券二维码，凭二维码到必胜客门店使用；一条链接内金额可多次使用，请妥善保存好代金券二维码。
+            <p><span>③</span>此优惠券不记名、不挂失、不退换，请妥善保管，过期作废，请及时绑定使用。
+        </div>
+
+        <div class="huodongguize_c" id="kdj" style="display:none;;">
+            <p><span>①</span>肯德基代金券将以链接的形式发送用户，可在【个人中心】-【我的订单】页面查看代金券详情；
+            <p><span>②</span>用户在肯德基代金券详情点击链接获取代金券条形码，凭条形码到肯德基门店使用
+            <p><span>③</span>此优惠券不记名、不挂失、不退换，请妥善保管，过期作废，请及时绑定使用。
+            <p><span>④</span>活动中如遇问题请拨打客服电话400-650-6038‬咨询（ 9:00-18：00 ）
+        </div>
+
+        <div class="huodongguize_c" id="kwyy" style="display:none;">
+            <p><span>①</span>酷我音乐会员将以兑换码的形式发送用户，可在【个人中心】-【我的订单】页面查看代金券详情；
+            <p><span>②</span>打开“酷我APP”登陆，点击“开通豪华VIP”进入会员中心底部后，点击“使用兑换码”激活
+        </div>
+
+        <div class="huodongguize_c" id="txyd" style="display:none;">
+            <p><span>①</span>腾讯阅读会员将以兑换码的形式发送用户，可在【个人中心】-【我的订单】页面查看代金券详情；
+            <p><span>②</span>打开“腾讯阅读”登陆，点击“VIP”进入会员中心底部后，点击“使用兑换码”激活
+
+        </div>
+
+        <div class="huodongguize_c" id="tmcs" style="display:none;">
+            <p><span>①</span>天猫超市兑换卡将以卡号和卡密的形式发送用户，可在【个人中心】-【我的订单】页面查看；
+            <p><span>②</span>下载手机天猫APP注册并登录天猫超市；
+            <p><span>③</span>“我的”-“红包卡券”—“会员卡”—“天猫超市卡”-—“我要充值”—“绑卡”-“输入超市卡号、卡密”，点击“确定”进行绑卡消费；
+            <p><span>④</span>本礼品卡仅限于天猫超市中使用，天猫APP、淘宝APP及电脑端天猫超市均支持用次卡结算，暂不支持邮费抵用、分阶段付款订单、代付及货到付款等，具体以官方公示规则为准；
+            <p><span>⑤</span>购卡成功后，卡号卡密需和淘宝账户做绑定后方可使用（只支持全额绑定）；
+            <p><span>⑥</span>本卡不记名、不挂失、不退换，请妥善保管，过期作废，请及时绑定使用。
+
+        </div>
+
+        <div class="huodongguize_c" id="ddcx" style="display:none;">
+            <p><span>①</span>滴滴代金券将以兑换码的形式发放，可在【个人中心】-【我的订单】获得卡密。获得兑换码后下载滴滴出行客户端，注册并登陆后，点击个人中心正下方小三角展开菜单，选择“兑换码”，输入兑换码并激活；
+            <p><span>②</span>用户可在滴滴出行APP【我的钱包】中“我的出行券”查看已经获取的打车券种类和面值，以及有效期；
+            <p><span>③</span>使用滴滴线上支付工具支付时会自动匹配适用于行程的券。
+            <p><span>④</span>使用期限一般是拿到卡券后三个月内绑定，请您于兑换后一个月内使用完。过期不退不换，逾期作废失效；
+            <p><span>⑤</span>单次行程只能用一张券，不足部分需用电子支付方式补足，不可叠加使用，不找零，过期作废 ，不可抵扣过路过桥费、感谢费。
+
+
+            <p>注：滴滴快车券仅限于快车，专车和顺风车不可使用。券码使用如有问题请拨打滴滴快车客服电话：400-162-0660进行咨询。
+
+        </div>
+
+        <div class="huodongguize_c" id="elm" style="display:none;">
+            <p><span>①</span>本商品为饿了么超级会员卡，可在饿了么app兑换使用；
+            <p><span>②</span>购买成功后，请至首页“个人中心”中查看饿了么超级会员卡
+            <p><span>③</span>饿了么超级会员充值账号为饿了么绑定的手机号码；
+            <p><span>④</span>充值成功后可在饿了么app-我的-超级会员查看会员到期日；
+            <p><span>④</span>本卡不退不换，如有疑问请至客服中心咨询。
+            <p>【温馨提示】
+                （1）请先确认产品再进行购买，电子券属于虚拟商品，一旦充值，不支持退换货；
+                （2）具体使用规则，以官方公示为准。
+        </div>
+
+        <div class="huodongguize_c" id="hf" style="display:none;">
+            <p><span>①</span>话费充值预计5-10分钟内到账，如遇运营商网络波动预计72小时内到账。
+            <p><span>②</span>话费充值至填写的手机号码中。
+            <p><span>③</span>充值如遇携号转网用户、未实现实名认证用户、运营商受限用户对应的手机号无法充值
+            <p><span>④</span>活动过程中如遇问题欢迎拨打运营商客服电话：400-650-6038（周一至周五9:00–17:30）。
+        </div>
+
+        <div class="huodongguize_c" id="mgtv" style="display:none;">
+            <p><span>①</span>购买成功后请在产品有效期内进行充值，以免影响您正常使用，过期作废
+            <p><span>②</span>请使用您绑定芒果TV手机号码进行充值，（不支持QQ号、微信号及其他三方号码充值）充值前请仔细核对充值账号无误后再进行充值。
+            <p><span>③</span>请在订单中输入您的芒果TV绑定的手机号进行充值，本次服务暂不支持微信号、QQ号及其他三方号码充值；充值成功后请使用充值的手机号码登录芒果TV APP。
+            <p><span>④</span>如果没有芒果账号，系统会自动为您手机号进行注册，以短信告知临时密码，请登录芒果TV APP及时修改密码。
+            <p><span>④</span>到账查询方式：打开芒果TV APP，点击【我的-VIP会员】进行查看。
+            <p><span>④</span>请在充值前仔细核对充值手机号码无误后再进行充值。
+
+
+        </div>
+
+        <div class="huodongguize_c" id="mtwm" style="display:none;">
+            <p><span>①</span>美团外卖兑换券将以兑换码的形式发送用户，可在【个人中心】-【我的订单】查看详情。获得兑换码后180天内可兑换，兑换后有效期30天；
+            <p><span>②</span>在“美团外卖”手机客户端中“我的”-“红包”点击“兑换”，输入优惠券码兑换到卡包中；
+            <p><span>③</span>在美团外卖app或美团app外卖频道下单后，在“美团红包”中选择，即可抵扣相应金额；
+            <p><span>④</span>一个订单仅限使用一张优惠码，优惠码不找零、不提现，不得转售，逾期作废；
+            <p><span>④</span>抵用券仅限购买用户当前定位城市的项目；
+            <p><span>④</span>成功下单后优惠码即作废，申请退款后无法退换
+            <p><span>④</span>如有疑问或咨询，请致电美团外卖客服电话：10109777（周一至周日9:00-23:00，节假日除外）。
+        </div>
+
+        <div class="huodongguize_c" id="nxdc" style="display:none;">
+            <p><span>①</span>奈雪的茶代金券将以兑换码的形式发送用户，可在【个人中心】-【我的订单】页面查看代金券详情
+            <p><span>②</span>获取账号及密码--登陆奈雪的茶微信公众号--会员中心--券码兑换--绑定新的礼品卡--输入卡号与密码--领取您的奈雪的茶电子预付卡
+            <p><span>③</span>可分多次消费，到门店出示微信端绑定的电子预付卡二维码核销
+            <p><span>④</span>兑换时请向门店店员出示券码；
+            <p><span>④</span>此券不可兑换现金，不设找零，不可二次转售；
+            <p><span>④</span>此券不得与其他优惠券同时使用；
+            <p><span>④</span>此券不适用于外卖平台使用；
+            <p><span>④</span>券面图片仅供参考，产品以实物为准；
+            <p><span>④</span>至任意一家奈雪门店使用
+            <p><span>④</span>可分多次消费，卡片不记名，不挂失
+        </div>
+
+        <div class="huodongguize_c" id="xmly" style="display:none;">
+            <p><span>①</span>喜马拉雅会员将以兑换码的形式发送用户，可在【个人中心】-【我的订单】页面查看代金券详情；
+            <p><span>②</span>凭卡密在喜马拉雅APP中激活
+        </div>
+
+        <div class="huodongguize_c" id="xbk" style="display:none;">
+            <p><span>①</span>星巴克代金券将以激活码的形式发放，可在【个人中心】-【我的订单】获得卡密。
+            <p><span>②</span>点击打开券码信息，显示星巴克专属二维码
+            <p><span>③</span>凭二维码到星巴克门店使用
+            <p><span>④</span>此优惠券不记名、不挂失、不退换，请妥善保管，过期作废，请及时绑定使用
+        </div>
+
+        <div class="huodongguize_c" id="yksp" style="display:none;">
+            <p><span>①</span>优酷会员将以兑换码的形式发送，可在【个人中心】-【我的订单】查看兑换码。
+            <p><span>②</span>获得兑换码后下载优酷APP或打开网页版进入优酷平台，注册并登陆优酷账号；
+            <p><span>③</span>点击右上方“会员中心”， 在“开通会员”下方点击“会员卡激活”；
+            <p><span>④</span>在弹出的页面中输入“兑换码”以及 预留的手机号；
+            <p><span>④</span>输入手机验证码，点击“激活会员”；
+            <p><span>④</span>优酷会员激活成功。
+            <p>注：会员卡仅限已登录用户使用。
+                请在激活有效期内激活会员卡，过期会员卡失效。
+                会员卡不可兑换现金。请注意会员卡保密性，若发生盗用、泄露、遗失等问题不予调换与退款。
+        </div>
+
+        <div class="huodongguize_c" id="jlf" style="display:none;">
+            <p><span>①</span>用户可通过购物、评论以及各类型活动获得积分，享受各种福利。
+            <p><span>②</span>大多数商城购物线下门店通用。
+        </div>
+
+        <div class="huodongguize_c" id="wem" style="display:none;">
+            <p><span>①</span>沃尔玛消费的累积积分可用于兑换专用刷卡金，用于抵扣指定沃尔玛门店的店内消费，当累积积分达到3000分及以上时，持卡人可按照比例进行兑换
+            <p><span>②</span>沃尔玛店内专享刷卡金（以下简称“沃尔玛刷卡金”）仅限在沃尔玛门店内使用
+        </div>
+
+
+<!--        <div class="know"><img src="images/zhidaole.png" class="hide"></div>-->
+        <div class="but_bg"><img src="images/close3.png" class="hide"></div>
+    </div>
+</div>
+<!--活动说明-->
+<!--确定兑换-->
+<div class="luruchenggong_bg" style="display:none;">
+    <div class="luruchenggong_img"><img src="images/tishi_bg.png"></div>
+    <div class="tishi_neirong">
+        <p>&nbsp;</p>
+        <!--积分充足时显示此提示-->
+        <div id="duihuan" style="display: none">
+            <p>您确定要兑换此礼品吗？</p>
+            <p>&nbsp;</p>
+            <p class="tishi_img"><a ontouchend="queren()" onclick="queren()"><img src="images/quedingduihuan.png"/></a></p>
+        </div>
+        <!--积分充足时显示此提示-->
+
+        <!--积分不足时显示此提示-->
+        <div id="buzu" style="display: none">
+            <p>您的积分暂不充足</p>
+            <p>&nbsp;</p>
+            <!--            <p class="tishi_img"><a href="#"><img src="images/huoqujifen.png"/></a></p>-->
+            <!--积分不足时显示此提示-->
+        </div>
+    </div>
+    <div class="but_bg"><img src="images/close3.png" id="hide2"></div>
+</div>
+<!--确定兑换-->
+<!--兑换成功-->
+<div class="duihuan_bg" style="display:none;">
+    <div class="duihuanchenggong">
+        <div class="duihuan_img"><img src="images/duihuanchenggong.png"></div>
+        <div class="duihuan_t">请填写您要充值的手机号码</div>
+        <p>
+            <input name="" type="text" class=" txt2" placeholder="手机号码">
+        </p>
+
+        <!--第二种内容--
+    <p><input name="" type="text" class=" txt2"placeholder="收货人"></p>
+    <p><input name="" type="text" class=" txt2"placeholder="手机号码"></p>
+    <p><input name="" type="text" class=" txt2"placeholder="详细地址"></p>
+    <!--第二种内容-->
+        <div class="know"><img src="images/know.png"></div>
+    </div>
+    <div class="but_bg"><img src="images/close3.png" class="hide"></div>
+</div>
+<!--兑换成功-->
+</body>
+</html>

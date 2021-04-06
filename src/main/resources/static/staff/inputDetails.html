@@ -1,0 +1,148 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>排行榜</title>
+    <link type="text/css" rel="stylesheet" href="css/shouji.css"/>
+    <meta name="viewport" content="width=device-width initial-scale=1.0 maximum-scale=1.0 user-scalable=yes"/>
+    <script type="text/javascript" src="js/jquery1.42.min.js"></script>
+    <script type="text/javascript" src="../js/common.js"></script>
+    <script type="text/javascript">
+        $(function () {
+
+            getStaffInfo()
+
+            $.ajax({
+                cache: false,
+                type: "GET",
+                url: appData.domain + "/jxbocpoints/user/getInputDetails",
+                beforeSend: function (request) {
+                    request.setRequestHeader("X-Auth-Token", localStorage.getItem('token'));
+                },
+                data: {},
+                dataType: "json",
+                async: false,
+                success: function (result) {
+                    if (result.status == appData.ok) {
+
+                        let voList = result.data
+
+                        let html = ''
+                        for (let i = 0; i < voList.length; i++) {
+
+                            let business = voList[i].business
+                            let info = ''
+
+                            for (let j = 0; j < business.length; j++) {
+                                info = info + business[j] + '<br/>'
+                            }
+
+                            html = html + ' <li>' +
+                                '<div class="kehu_l3">' + voList[i].phone + '</div>' +
+                                '<div class="kehu_m3">' + voList[i].date + '</div>' +
+                                '<div class="kehu_r3">' + info + '</div>' +
+                                '<div class="clear"></div>'+
+                                '</li>'
+                        }
+                        $('#kehu_list').html(html)
+
+                    }
+
+                },
+                error: function (request) {
+                    alert("系统繁忙，请重试！");
+                }
+            });
+
+
+        })
+
+        function getStaffInfo(){
+
+            let staffName = sessionStorage.getItem("staffName")
+            let outletsName = sessionStorage.getItem("outletsName")
+            let branchName = sessionStorage.getItem("branchName")
+            let outletsRanking = sessionStorage.getItem("outletsRanking")
+
+            if(isEmpty(staffName) || isEmpty(outletsName) || isEmpty(branchName)){
+                $.ajax({
+                    cache: false,
+                    type: "GET",
+                    contentType: "application/json;charset=UTF-8",
+                    url: appData.domain + "/jxbocpoints/user/getStaffInfo",
+                    beforeSend: function (request) {
+                        request.setRequestHeader("X-Auth-Token", localStorage.getItem("token"));
+                    },
+                    data: {},
+                    dataType: "json",
+                    async: false,
+                    error: function (request) {
+                        alert("系统繁忙，请重试！");
+                    },
+                    success: function (result) {
+                        console.log(result)
+                        if (result.status === appData.ok) {
+                            let branchName = result.data.branchName
+                            let outletsName = result.data.outletsName
+                            let staffName = result.data.staffName
+                            let outletsRanking = result.data.outletsRanking
+
+                            $('#staffName').html(staffName);
+                            $('#outletsName').html(outletsName);
+                            $('#outletsRanking').html(outletsRanking);
+
+                            sessionStorage.setItem("branchName",branchName)
+                            sessionStorage.setItem("outletsName",outletsName)
+                            sessionStorage.setItem("staffName",staffName)
+                            sessionStorage.setItem("allRanking",staffName)
+                            sessionStorage.setItem("outletsRanking",outletsRanking)
+
+                        } else {
+                            alert(result.msg)
+                            history.back(-1);
+                        }
+
+                    }
+                });
+            }else {
+                $('#staffName').html(staffName)
+                $('#outletsName').html(outletsName)
+                $('#outletsRanking').html(outletsRanking);
+            }
+        }
+
+    </script>
+</head>
+
+<body>
+
+<div class="luru_top">
+    <div class="luru_top1">
+        <div class="luru_touxiang"><img src="images/bocLogo.png"/></div>
+        <div class="luru_txt">
+            <p><strong id="staffName" >张丽</strong></p>
+            <p><strong id="outletsName" >南昌市XX呈贡支行营业部</strong></p>
+
+        </div>
+        <div class="luru_paiming"><p><strong id="outletsRanking">0</strong></p>
+            <p>二级机构排名</p></div>
+        <div class="clear"></div>
+    </div>
+</div>
+
+
+<div class="tuijian_t" style="margin-top:10px;">
+    <div class="tuijian_t21">手机号码</div>
+    <div class="tuijian_t22">录入时间</div>
+    <div class="tuijian_t23">办理业务</div>
+    <div class="clear"></div>
+</div>
+<ul id="kehu_list">
+
+
+
+</ul>
+
+</body>
+</html>

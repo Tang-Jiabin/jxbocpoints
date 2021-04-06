@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>修改商品</title>
+    <link rel="stylesheet" href="./static/common/layui/css/layui.css">
+    <link rel="stylesheet" href="./static/admin/css/style.css">
+    <script src="./static/common/layui/layui.js"></script>
+    <script src="./static/common/jquery-3.3.1.min.js"></script>
+    <script src="./static/common/vue.min.js"></script>
+    <script src="../js/common.js"></script>
+    <script type="text/javascript">
+
+        let subProducts
+        let listPicFile
+        let detailPicFile
+        let productsId
+
+        $(function () {
+            productsId = getAddressBarParam('pid')
+
+            if (isEmpty(productsId)) {
+                layer.closeAll()
+            } else {
+                getGoodsInfo(productsId)
+            }
+
+            $('#listPic').change(function (e) {
+                let oFReader = new FileReader();
+                oFReader.readAsDataURL(e.target.files[0]);
+                oFReader.onload = function (oFREvent) {
+                    $('#listPicImg').attr('src', oFREvent.target.result)
+                };
+                listPicFile = e.target.files[0]
+                console.log(listPicFile)
+            })
+            $('#detailPic').change(function (e) {
+                let oFReader = new FileReader();
+                oFReader.readAsDataURL(e.target.files[0]);
+                oFReader.onload = function (oFREvent) {
+                    $('#detailPicImg').attr('src', oFREvent.target.result)
+                };
+                detailPicFile = e.target.files[0]
+            })
+        })
+
+        function getGoodsInfo(pid) {
+            $.ajax({
+                cache: false,
+                type: "GET",
+                url: appData.domain + "/jxbocpoints/admin/getGoodsInfo",
+                beforeSend: function (request) {
+                    request.setRequestHeader("X-Auth-Token", localStorage.getItem("p_admin_token"));
+                },
+                data: {productsId: pid},
+                dataType: "json",
+                async: false,
+                success: function (result) {
+
+                    if (result.status !== 200) {
+                        alert(result.msg)
+                        if (result.status === 401) {
+                            window.location.href = "./login.html";
+                        }
+                        return;
+                    }
+
+                    setGoodsInfo(result.data)
+                    console.log(result.data)
+                },
+                error: function () {
+                    alert("系统繁忙，请重试！");
+                }
+            });
+        }
+
+        function setGoodsInfo(data) {
+            let name = data.name;
+            let number = data.number;
+            let imgUrl = data.imgUrl;
+            let detailImgUrl = data.detailImgUrl;
+            let categoryId = data.categoryId;
+            let typeId = data.typeId;
+            let vip = data.vip;
+            subProducts = data.subProductList;
+
+            $('#name').val(name)
+            $('#number').val(number)
+            $('#listPicImg').attr('src', imgUrl)
+            $('#detailPicImg').attr('src', detailImgUrl)
+            $('#categoryId').val(categoryId)
+            $('#typeId').val(typeId)
+            $('#level').val(vip)
+
+            setProductsTable()
+        }
+
+        //设置商品表格
+        function setProductsTable() {
+            layui.use('table', function () {
+                table = layui.table;
+                //监听单元格编辑
+                table.on('edit(products_table)', function (obj) {
+                    var value = obj.value //得到修改后的值
+                        , data = obj.data //得到所在行所有键值
+                        , field = obj.field; //得到字段
+                    obj.field = value
+                });
+
+                //监听行工具事件
+                table.on('tool(products_table)', function (obj) {
+                    var data = obj.data;
+                    if (obj.event === 'del') {
+                        layer.confirm('确认删除吗', function (index) {
+                            delSubGoods(data.productsId)
+                            layer.close(index)
+                        });
+                    }
+                    if (obj.event === 'edit') {
+                        console.log("edit" + data.productsId)
+                        modify(data.productsId)
+                    }
+                });
+                //展示已知数据
+                table.render({
+                    elem: '#products_table'
+                    , cellMinWidth: 100
+                    , cols: [[ //标题栏
+                        {field: 'productsId', title: 'ID', hide: true, sort: true}
+                        , {field: 'name', title: '分类名称', align: 'center'}
+                        , {field: 'money', title: '产品价值', sort: true, align: 'center'}
+                        , {field: 'number', title: '数量', sort: true, align: 'center'}
+                        , {field: 'vipPrice', title: '购买价格', sort: true, align: 'center'}
+                        , {field: 'vipIntegral', title: '购买积分', sort: true, align: 'center'}
+                        , {fixed: 'right', title: '操作', toolbar: '#edit', align: 'center'}
+                        , {fixed: 'right', title: '操作', toolbar: '#del', align: 'center'}
+                    ]]
+                    , data: subProducts
+                    , skin: 'line' //表格风格
+                    , even: true
+                    //,page: true //是否显示分页
+                    //,limits: [5, 7, 10]
+                    //,limit: 5 //每页默认显示的数量
+                });
+            });
+        }
+
+        function submit() {
+            let name = $('#name').val().trim()
+            let number = $('#number').val()
+            let  category = $('#categoryId').val()
+            let type = $('#typeId').val()
+            let level = $('#level').val()
+
+            if (isEmpty(name)) {
+                alert("名称不能为空")
+            }
+            layer.open({
+                type: 1,
+                title: false,
+                offset: 'auto',
+                id: 'uploadTip',
+                content: '<div style="padding: 20px 100px;">上传中 <i class="layui-icon layui-icon-loading layui-anim layui-anim-rotate layui-anim-loop" style="display: inline-block"></i></div>',
+                btnAlign: 'c',
+                closeBtn: 0,
+                shade: 0,
+                yes: function () {
+
+                }
+            });
+
+            let data = new FormData()
+            data.append('productsId', productsId);
+            data.append('name', name);
+            data.append('type', type);
+            data.append('category', category);
+            data.append('level', level);
+            data.append('listPic', listPicFile);
+            data.append('detailPic', detailPicFile);
+
+            $.ajax({
+                url: appData.domain + '/jxbocpoints/admin/modifyProducts',
+                method: 'post',
+                data: data,
+                type: "POST",
+                contentType: false,
+                processData: false,
+                success: function (res) {
+                    layer.open({
+                        type: 1
+                        , offset: 'auto' //具体配置参考：http://www.layui.com/doc/modules/layer.html#offset
+                        , id: 'uploadTip2' //防止重复弹出
+                        , content: '<div style="padding: 20px 100px;">上传成功</div>'
+                        , btn: '关闭'
+                        , btnAlign: 'c' //按钮居中
+                        , shade: 0 //不显示遮罩
+                        , yes: function () {
+                            layer.closeAll();
+                        }
+                    });
+
+                },
+                error: function (data) {
+                    alert("系统繁忙")
+                }
+            });
+        }
+
+        function delSubGoods(id){
+            $.ajax({
+                url: appData.domain + '/jxbocpoints/admin/delProducts',
+                method: 'post',
+                data: {productsId:id},
+                type: "POST",
+                success: function (res) {
+                    for (let i = 0; i < subProducts.length; i++) {
+                        if(subProducts[i].productsId === id){
+                            subProducts.splice(i,1)
+                        }
+                    }
+
+                    setProductsTable()
+                },
+                error: function (data) {
+                    alert("系统繁忙")
+                }
+            });
+        }
+
+        function modify(pid) {
+            let mgoods = layer.open({
+                type: 2 //此处以iframe举例
+                , title: '修改分类'
+                , area: 'auto'
+                , shade: 0
+                , maxmin: true
+                , offset: 'auto'
+                , content: appData.domain + '/jxbocpoints/admin/modify_type.html?pid=' + pid
+                , btn: ['关闭'] //只是为了演示
+                , yes: function () {
+                    layer.closeAll();
+                }
+                , zIndex: layer.zIndex //重点1
+                , success: function (layero) {
+                    layer.setTop(layero); //重点2
+                }
+            });
+            layer.full(mgoods)
+        }
+
+    </script>
+</head>
+<body>
+<div id="app">
+    <!--顶栏-->
+    <!--<header>
+        <h1 v-text="webname"></h1>
+        <div class="breadcrumb">
+            <i class="layui-icon">&#xe715;</i>
+            <ul>
+                <li v-for="vo in address">
+                    <a  v-text="vo.name" :href="vo.url" ></a> <span>/</span>
+                </li>
+            </ul>
+        </div>
+    </header>-->
+
+    <div class="main">
+        <!--左栏-->
+        <!--<div class="left">
+            <ul class="cl" >
+                &lt;!&ndash;顶级分类&ndash;&gt;
+                <li v-for="vo,index in menu" :class="{hidden:vo.hidden}">
+                    <a href="javascript:;"  :class="{active:vo.active}"  @click="onActive(index)">
+                        <i class="layui-icon" v-html="vo.icon"></i>
+                        <span v-text="vo.name"></span>
+                        <i class="layui-icon arrow" v-show="vo.url.length==0">&#xe61a;</i> <i v-show="vo.active" class="layui-icon active">&#xe623;</i>
+                    </a>
+                    &lt;!&ndash;子级分类&ndash;&gt;
+                    <div v-for="vo2,index2 in vo.list">
+                        <a href="javascript:;" :class="{active:vo2.active}" @click="onActive(index,index2)" v-text="vo2.name"></a>
+                        <i v-show="vo2.active" class="layui-icon active">&#xe623;</i>
+                    </div>
+                </li>
+            </ul>
+        </div>-->
+        <!--右侧-->
+        <div class="right">
+
+            <fieldset class="layui-elem-field layui-field-title">
+                <legend>修改商品</legend>
+            </fieldset>
+
+            <form class="layui-form">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">商品名称</label>
+                    <div class="layui-input-block">
+                        <input id="name" type="text" value="" placeholder="" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">商品类别</label>
+                    <!--                    种类ID 1-视频会员 2-音频娱乐 3-生活优惠 4-安全出行 5-话费直充-->
+                    <div class="layui-inline" style="z-index: 9999">
+                        <select id="categoryId" class="layui-inline">
+                            <option value="1">视频会员</option>
+                            <option value="2">音频娱乐</option>
+                            <option value="3">生活优惠</option>
+                            <option value="4">安全出行</option>
+                            <option value="5">话费直充</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">领取种类</label>
+                    <!--                    类别Id 1-普通兑换链接  2-微信跳转链接-->
+                    <div class="layui-inline" style="z-index: 9990">
+                        <select id="typeId" class="layui-inline">
+                            <option value="1">app内兑换链接</option>
+                            <option value="2">微信跳转链接</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">权限级别</label>
+                    <!--                    类别Id 1-普通兑换链接  2-微信跳转链接-->
+                    <div class="layui-inline" style="z-index: 9980">
+                        <select id="level" class="layui-inline">
+                            <option value="1">仅大众用户</option>
+                            <option value="2">大众特权用户</option>
+                            <option value="3">仅特权用户</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label ">商品图片 </label>
+                    <div class="layui-inline center">
+                        <img onclick="listPic.click()" id="listPicImg" title="列表图" src=""
+                             style="width: 120px;height: 120px">
+                        <input id="listPic" type="file" name="pic" class="layui-input" style="display: none">
+                    </div>
+                    <div class="layui-inline center">
+                        <img onclick="detailPic.click()" id="detailPicImg" title="详情图" src=""
+                             style="width: 120px;height: 120px">
+                        <input id="detailPic" type="file" name="pic" class="layui-input" style="display: none">
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label "> </label>
+                    <div class="layui-word-aux layui-inline center">
+                        <a type="button" class="layui-btn" onclick="listPic.click()">
+                            <i class="layui-icon">&#xe67c;</i>上传图片
+                        </a>
+                    </div>
+                    <div class="layui-word-aux layui-inline center">
+                        <a type="button" class="layui-btn" onclick="detailPic.click()">
+                            <i class="layui-icon">&#xe67c;</i>上传图片
+                        </a>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-inline">商品分类</label><br>
+                    <div class="layui-inline">
+                        <table id="products_table" class="layui-table layui-inline" lay-filter="products_table">
+                            <script type="text/html" id="edit">
+                                <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit">编辑</a>
+                            </script>
+                            <script type="text/html" id="del">
+                                <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+                            </script>
+                        </table>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <a type="button" class="layui-btn" onclick="submit()">立即提交</a>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+<script src="./static/admin/js/config.js"></script>
+<script src="./static/admin/js/script.js"></script>
+</body>
+</html>

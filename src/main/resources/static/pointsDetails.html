@@ -1,0 +1,160 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+    <link type="text/css" rel="stylesheet" href="css/shouji.css"/>
+    <meta name="viewport" content="width=device-width initial-scale=1.0 maximum-scale=1.0 user-scalable=yes"/>
+    <script type="text/javascript" src="js/jquery1.42.min.js"></script>
+    <script type="text/javascript" src="js/tab.js"></script>
+    <script type="text/javascript" src="js/common.js"></script>
+
+    <script type="text/javascript">
+        let detaileds;
+        $(function () {
+
+            init()
+
+        })
+
+        function init() {
+            $.ajax({
+                cache: false,
+                type: "GET",
+                url: appData.domain + "/jxbocpoints/integral/getDetails",
+                beforeSend: function (request) {
+                    request.setRequestHeader("X-Auth-Token", localStorage.getItem("token"));
+                },
+                data: {},
+                dataType: "json",
+                async: false,
+                success: function (result) {
+                    console.log(result.status);
+                    console.log(result.msg);
+                    console.log(result.data);
+                    detaileds = result.data.detailedList
+
+                    let used = result.data.usedFraction
+                    let residual = result.data.residualFraction
+                    let total = result.data.totalFraction
+
+                    $('#used').html(used)
+                    $('#residual').html(residual)
+                    $('#total').html(total)
+
+                    clickType(1)
+                },
+                error: function (request) {
+                    alert("系统繁忙，请重试！");
+                }
+            });
+
+
+        }
+
+        function clickType(index) {
+            index === 1 ? $('#ps01').attr('class', 'sel4') : $('#ps01').attr('class', '')
+            index === 2 ? $('#ps02').attr('class', 'sel4') : $('#ps02').attr('class', '')
+            index === 3 ? $('#ps03').attr('class', 'sel4') : $('#ps03').attr('class', '')
+
+            let html = ''
+            for (let i = 0; i < detaileds.length; i++) {
+
+
+                if (index === 1) {
+                    let fh = ''
+                    if (Number(detaileds[i].type) === 1) {
+                        fh = '+'
+                    }
+                    if (Number(detaileds[i].type) === 2) {
+                        fh = '-'
+                    }
+                    html = html + '<li>' +
+                        '<div class="jilu_l">' + detaileds[i].tradeName + '<br/>' +
+                        detaileds[i].transactionDate +
+                        '</div>' +
+                        '<div class="jilu_r">' + fh + detaileds[i].fraction + '积分</div>' +
+                        '</li>'
+
+                } else if (index === 2) {
+                    if (Number(detaileds[i].type) === 1) {
+                        html = html + '<li>' +
+                            '<div class="jilu_l">' + detaileds[i].tradeName + '<br/>' +
+                            detaileds[i].transactionDate +
+                            '</div>' +
+                            '<div class="jilu_r">+' + detaileds[i].fraction + '积分</div>' +
+                            '</li>'
+                    }
+                } else if (index === 3) {
+                    if (Number(detaileds[i].type) === 2) {
+                        html = html + '<li>' +
+                            '<div class="jilu_l">' + detaileds[i].tradeName + '<br/>' +
+                            detaileds[i].transactionDate +
+                            '</div>' +
+                            '<div class="jilu_r">+' + detaileds[i].fraction + '积分</div>' +
+                            '</li>'
+                    }
+                }
+            }
+
+            $('#jilu_list').html(html)
+
+        }
+
+
+    </script>
+</head>
+
+<body style="background-color:#fff; padding-bottom:5%;">
+
+<div class="banner"><img src="images/mingxi.png"/>
+    <div class="mingxi1"><strong id="residual">0</strong><br/>
+        当前积分
+    </div>
+    <div class="mingxi2"><p id="total">0</p><br/><strong>总积分</strong></div>
+    <div class="mingxi3"><p id="used">0</p><br/><strong>已消耗</strong></div>
+</div>
+<div class="mingxi_tab">
+    <a href="javascript:void(0)" class="sel4" id="ps01" ontouchend="clickType(1)" onclick="clickType(1)">全部记录</a>
+    <a href="javascript:void(0)" id="ps02" ontouchend="clickType(2)" onclick="clickType(2)">收入记录</a>
+    <a href="javascript:void(0)" id="ps03" ontouchend="clickType(3)" onclick="clickType(3)">支出记录</a>
+    <div class="clear"></div>
+</div>
+<div id="pros01">
+    <ul id="jilu_list">
+<!--        <li>-->
+<!--            <div class="jilu_l">每日签到<br/>-->
+<!--                2020.20.20 24：24：24-->
+<!--            </div>-->
+<!--            <div class="jilu_r">+120积分</div>-->
+<!--        </li>-->
+<!--        <li>-->
+<!--            <div class="jilu_l">每日签到<br/>-->
+<!--                2020.20.20 24：24：24-->
+<!--            </div>-->
+<!--            <div class="jilu_r">+120积分</div>-->
+<!--        </li>-->
+<!--        <li>-->
+<!--            <div class="jilu_l">每日签到<br/>-->
+<!--                2020.20.20 24：24：24-->
+<!--            </div>-->
+<!--            <div class="jilu_r">+120积分</div>-->
+<!--        </li>-->
+<!--        <li>-->
+<!--            <div class="jilu_l">每日签到<br/>-->
+<!--                2020.20.20 24：24：24-->
+<!--            </div>-->
+<!--            <div class="jilu_r">+120积分</div>-->
+<!--        </li>-->
+<!--        <li>-->
+<!--            <div class="jilu_l">每日签到<br/>-->
+<!--                2020.20.20 24：24：24-->
+<!--            </div>-->
+<!--            <div class="jilu_r">+120积分</div>-->
+<!--        </li>-->
+    </ul>
+</div>
+
+</body>
+</html>

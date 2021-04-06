@@ -1,0 +1,210 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title></title>
+<link type="text/css" rel="stylesheet" href="css/shouji.css" />
+<link type="text/css" rel="stylesheet" href="css/css.css" />
+<link rel="stylesheet" href="css/swiper.min.css">
+<meta name="viewport" content="width=device-width initial-scale=1.0 maximum-scale=1.0 user-scalable=yes" />
+<script type="text/javascript" src="js/jquery1.42.min.js"></script>
+<script type="text/javascript" src="js/jquery.Spinner.js"></script>
+<script type="text/javascript" src="js/tab.js"></script>
+<script type="text/javascript">
+$(function(){
+
+
+	
+	$("#c").Spinner({value:1});
+	
+	
+	
+});
+</script>
+<style>
+.swiper-container {
+	width: 94%;
+	height: 100%;
+	display: flex;
+	margin-top: 0px;
+	margin-right: auto;
+	margin-bottom: 0px;
+	margin-left: auto;
+	padding-top: 10px;
+	padding-bottom: 30px;
+	padding-right: 0%;
+	padding-left: 0%;
+	position: relative;
+}
+.swiper-slide {
+	text-align: center;
+	font-size: 18px;
+	/* Center slide text vertically */
+	display: -webkit-box;
+	display: -ms-flexbox;
+	display: -webkit-flex;
+	-webkit-box-pack: center;
+	-ms-flex-pack: center;
+	-webkit-justify-content: center;
+	justify-content: center;
+	-webkit-box-align: center;
+	-ms-flex-align: center;
+	-webkit-align-items: center;
+	align-items: center;
+	margin: 0px;
+	padding-top: 0%;
+	padding-right: 0%;
+	padding-bottom: 0%;
+	padding-left: 0%;
+	width: 33%;
+}
+.swiper-button-prev {
+	background-image: url(images/left.png)!important;
+	background-size: 80%;
+	margin-top: -3%;
+}
+/*改变了颜色和加粗的样式*/
+.swiper-button-next {
+	background-image: url(images/right.png)!important;
+	background-size: 80%;
+	margin-top: -3%;
+}
+</style>
+<script>
+
+$(document).ready(function(){
+  $("#huodongguize").click(function(){
+  $(".huodongguize_bg").show();
+  });
+  $(".hide").click(function(){
+  $(".huodongguize_bg").hide();
+  $(".duihuan_bg").hide();
+  });
+    $("#luruchenggong").click(function(){
+  $(".luruchenggong_bg").show();
+  });
+  $("#hide2").click(function(){
+  $(".luruchenggong_bg").hide();
+  });
+});</script>
+</head>
+
+<body style="background-color:#f5f5f5; padding-bottom:60px;">
+
+<div class="lipin_pic"> <!-- Swiper -->
+  <div class="swiper-container">
+    <div class="swiper-wrapper">
+      <div class="swiper-slide"><a href="#"><img src="images/lipinxiangqing.png" /></a></div>
+      <div class="swiper-slide"><a href="#"><img src="images/lipinxiangqing.png" /></a></div>
+      <div class="swiper-slide"><a href="#"><img src="images/lipinxiangqing.png" /></a></div>
+    </div>
+    <!-- Add Pagination -->
+    <div class="swiper-pagination"></div>
+  </div>
+  
+  <!-- Swiper JS --> 
+  <script src="js/swiper.min.js"></script> 
+  
+  <!-- Initialize Swiper --> 
+  <script>
+    var swiper = new Swiper('.swiper-container', {
+        pagination: '.swiper-pagination',
+        nextButton: '.swiper-button-next',
+        prevButton: '.swiper-button-prev',
+        slidesPerView: 1,
+        paginationClickable: true,
+        spaceBetween: 30,
+        loop: true
+    });
+    </script> 
+</div>
+<div class="lipin_t1"><span><a  href="javascript:void(0)" id="huodongguize">使用规则></a></span>腾讯视频会员月卡</div>
+<div class="lipin_t2">
+  <p><strong>原价：20元</strong></p>
+  <p>权溢价：0.01元+99积分&nbsp;&nbsp;<strong>剩余1900份</strong></p>
+</div>
+<div class="lipin_t3">
+  <div class="guige"><span>规格：</span><a href="javascript:void(0)" class="sel5">周卡</a><a href="#">月卡</a><a href="#">半年卡</a><a href="#">月卡</a><a href="#">年卡</a>
+    <div class="clear"></div>
+  </div>
+  <!--第二种规格--
+<div class="guige"><span>规格：</span><a href="javascript:void(0)" class="sel5">10元</a><a href="#">10元</a><a href="#">10元</a><br /><a href="#">10元</a><a href="#">10元</a><a href="#">10元</a><div class="clear"></div></div>
+<!--第二种规格--> 
+  <span>
+  <div id="c" class="Spinner"></div>
+  </span>数量：</div>
+<div class="lipin_c">
+  <p><strong>服务说明</strong></p>
+  <p>
+  <p>1.兑换成功后，可在个人中心—我的订单中查看，并单击提取卡
+    密获得兑换码。
+  <p>活动中如遇问题请拨打客户电话400-650-6038咨询（9：00-18：00）</p>
+</div>
+<div class="duihuan"><span> <a href="javascript:void(0)" id="luruchenggong">立即兑换</a> 
+  <!--暂时无货--
+<a href="javascript:void(0)"  style="background-color:#f7a229">暂时无货</a>
+<!--> 
+  </span>实际支付：0.01元+99积分</div>
+<!--活动说明-->
+<div class="huodongguize_bg" style="display:none;">
+  <div class="huodongguize">
+    <div class="huodongguize_img"><img src="images/shiyongguize.png"></div>
+    <div class="huodongguize_c">
+      <p><span>①</span>腾讯视频会员将以兑换码的形式发送，用户可在【我 的订单】页面查看兑换码。
+      <p><span>②</span>用户需下载腾讯视频APP或打开网页版进入腾讯视频平台，注册并登陆腾讯视频账号；
+      <p><span>③</span>点击右上方三角形VIP图标， 进入会员管理页面，点击“兑换VIP会员”；
+      <p><span>④</span>输入兑换码、手机号和验证码，点击“完成兑换”；
+      <p>腾讯视频会员兑换成功。
+      <p>注： 
+      <p>1体验月卡、季卡、年卡：兑换后立即获得相应时长；
+      <p>2优惠券兑换后立即到账，在开通腾讯视频VIP时可直接使	   用；
+      <p>3已经使用话费开通了腾讯视频VIP包月服务的用户,该次兑	  换的会员时长将在话费包月到期后生效；
+      <p>4兑换需验证手机号。如遇到手机号被其他账号绑定，可点	  击 http://t.cn/EGbgqhj 登录您的账号绑定手机，替换手	  机号原绑定账号。 
+    </div>
+    <div class="know"><img src="images/zhidaole.png"  class="hide"> </div>
+    <div class="but_bg"><img src="images/close3.png"  class="hide"> </div>
+  </div>
+</div>
+<!--活动说明--> 
+<!--确定兑换-->
+<div class="luruchenggong_bg" style="display:none;">
+  <div class="luruchenggong_img"><img src="images/tishi_bg.png"></div>
+  <div class="tishi_neirong">
+    <p>&nbsp;</p>
+    <!--积分充足时显示此提示-->
+    <p>您确定要兑换此礼品吗？</p>
+    <p>&nbsp;</p>
+    <p class="tishi_img"><a href="02 积分 03 礼品详情 02 支付结果.html"><img src="images/quedingduihuan.png" /></a></p>
+    <!--积分充足时显示此提示--> 
+    
+    <!--积分不足时显示此提示--
+     <p>您的积分暂不充足</p>
+      <p>&nbsp;</p>
+      <p class="tishi_img"><a href="#"><img src="images/huoqujifen.png" /></a></p>
+     <!--积分不足时显示此提示--> 
+    
+  </div>
+  <div class="but_bg"><img src="images/close3.png"  id="hide2"> </div>
+</div>
+<!--确定兑换--> 
+<!--兑换成功-->
+<div class="duihuan_bg" style="display:none;">
+  <div class="duihuanchenggong">
+    <div class="duihuan_img"><img src="images/duihuanchenggong.png"></div>
+    <div class="duihuan_t">请填写您要充值的手机号码</div>
+    <p>
+      <input name="" type="text" class=" txt2"placeholder="手机号码">
+    </p>
+    
+    <!--第二种内容--
+<p><input name="" type="text" class=" txt2"placeholder="收货人"></p>
+<p><input name="" type="text" class=" txt2"placeholder="手机号码"></p>
+<p><input name="" type="text" class=" txt2"placeholder="详细地址"></p>
+<!--第二种内容-->
+    <div class="know"><img src="images/know.png"  > </div>
+  </div>
+  <div class="but_bg"><img src="images/close3.png"  class="hide"> </div>
+</div>
+<!--兑换成功-->
+</body>
+</html>

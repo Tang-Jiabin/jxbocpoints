@@ -1,0 +1,154 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>排行榜</title>
+    <link type="text/css" rel="stylesheet" href="css/shouji.css"/>
+    <meta name="viewport" content="width=device-width initial-scale=1.0 maximum-scale=1.0 user-scalable=yes"/>
+    <script type="text/javascript" src="js/jquery1.42.min.js"></script>
+    <script type="text/javascript" src="../js/common.js"></script>
+    <script type="text/javascript">
+
+        let jumpLink
+        $(function () {
+            init()
+
+            let share = getAddressBarParam("share")
+            appData.share = share;
+
+            $.ajax({
+                cache: false,
+                type: "GET",
+                url: appData.domain + "/jxbocpoints/user/getAcceptInfo",
+                beforeSend: function (request) {
+                    request.setRequestHeader("X-Auth-Token", localStorage.getItem('token'));
+                },
+                data: {},
+                dataType: "json",
+                async: false,
+                success: function (result) {
+                    if (result.status === appData.ok) {
+                        console.log(result.data)
+
+                        let voList = result.data.voList
+                        jumpLink = result.data.JumpLink
+
+                        let html = '<tr>' +
+                            '<td><strong>手机号</strong></td>' +
+                            '<td><strong>状态</strong></td>' +
+                            '<td><strong>奖品</strong></td>' +
+                            '</tr>'
+                        for (let i = 0; i < voList.length; i++) {
+                            html = html + ' <tr>' +
+                                '<td>' + voList[i].phone + '</td>' +
+                                '<td>' + voList[i].status + '</td>' +
+                                '<td>' + voList[i].prize + '</td>' +
+                                '</tr>'
+
+                        }
+
+                        $('.tb').html(html)
+
+                    }
+
+                },
+                error: function (request) {
+                    alert("系统繁忙，请重试！");
+                }
+            });
+
+
+        })
+
+        function share() {
+            window.c_plugins.merchantBridge.weixinShare(function () {
+
+            }, function (err) {
+                alert(err.message || err || '网络错误，请检查网络连接');
+            }, {
+                // url: 'https://boc.pay.zhongyunkj.cn/jxbocpoints/staff/invite.html?share=' + appData.share,
+                url: jumpLink,
+                title: '开盲盒最高赢99元微信立减金',
+                description: '',
+                img: ''
+            })
+        }
+
+        function init() {
+            /*****引入cordova**/
+
+            /**
+             * 识别设备终端
+             */
+            window.terminal = (function () {
+                let u = navigator.userAgent;
+
+                return { //浏览器版本信息
+                    trident: u.indexOf('Trident') > -1,
+                    presto: u.indexOf('Presto') > -1,
+                    webKit: u.indexOf('AppleWebKit') > -1,
+                    gecko: !(-1 >= u.indexOf('KHTML') || !(u.indexOf('Gecko') > -1)),
+                    mobile: !!u.match(/AppleWebKit.*Mobile.*/),
+                    ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/),
+                    android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1,
+                    iPhone: u.indexOf('iPhone') > -1,
+                    iPad: u.indexOf('iPad') > -1,
+                    webApp: u.indexOf('Safari') > -1,
+                    weixin: !(-1 >= u.indexOf('MicroMessenger') || !u.replace(/.*(MicroMessenger\/[^\s]*).*/, "$1").replace(
+                        "MicroMessenger/", "")) || false,
+                    appVersion: u.indexOf('bocapp(') > -1 ? u.match(/bocapp\(\S+\)/)[0].slice(7, -1) : '3.0.0'
+                };
+            })()
+            /**
+             * 引入cordova
+             */
+            let script = document.createElement('script');
+
+            let pth = "https://ebsnew.boc.cn/bocphone/BocMerchant/" // 生产环境
+
+            if (window.terminal.iPhone) {
+                script.src = pth + 'paylib/ios.js'
+            } else if (window.terminal.android) {
+                script.src = pth + 'paylib/android.js'
+            } else {
+                alert('无法识别终端类型')
+            }
+            document.getElementsByTagName('head')[0].appendChild(script);
+
+            /**
+             * 绑定事件---调用cordova
+             */
+            document.addEventListener('deviceready', function () {
+
+                window.c_plugins.merchantBridge.judgeLogin(function (loginData) {
+
+                    if (loginData.isLogin === "no") {
+                        noLogin()
+                    } else {
+                        login()
+                    }
+
+                }, function (err) {
+                    alert(err.message || err || '网络错误，请检查网络连接');
+                }, {})
+
+            })
+        }
+
+    </script>
+</head>
+
+<body style="background-color:#e5d7be">
+
+<div ontouchend="share()" onclick="share()" class="yaoqing_banner"><a href="#"><img src="images/bg.png"/></a></div>
+<div class="yaoqingmingxi">
+    <div class="yaoqingmingxi_t">——我的推荐记录——</div>
+    <div class="yaoqingmingxi_c">
+        <table border="0" class="tb">
+
+        </table>
+    </div>
+</div>
+</body>
+</html>

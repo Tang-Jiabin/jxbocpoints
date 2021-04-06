@@ -1,0 +1,237 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>排行榜</title>
+    <link type="text/css" rel="stylesheet" href="css/shouji.css"/>
+    <meta name="viewport" content="width=device-width initial-scale=1.0 maximum-scale=1.0 user-scalable=yes"/>
+    <script type="text/javascript" src="js/jquery1.42.min.js"></script>
+    <script type="text/javascript" src="../js/common.js"></script>
+
+    <script type="text/javascript">
+
+        $(function () {
+
+            getStaffInfo()
+
+            init();
+        })
+
+        function getStaffInfo() {
+
+            let staffName = sessionStorage.getItem("staffName")
+            let outletsName = sessionStorage.getItem("outletsName")
+            let branchName = sessionStorage.getItem("branchName")
+
+            if (isEmpty(staffName) || isEmpty(outletsName) || isEmpty(branchName)) {
+                $.ajax({
+                    cache: false,
+                    type: "GET",
+                    contentType: "application/json;charset=UTF-8",
+                    url: appData.domain + "/jxbocpoints/user/getStaffInfo",
+                    beforeSend: function (request) {
+                        request.setRequestHeader("X-Auth-Token", localStorage.getItem("token"));
+                    },
+                    data: {},
+                    dataType: "json",
+                    async: false,
+                    error: function (request) {
+                        alert("系统繁忙，请重试！");
+                    },
+                    success: function (result) {
+                        console.log(result)
+                        if (result.status === appData.ok) {
+                            let branchName = result.data.branchName
+                            let outletsName = result.data.outletsName
+                            let staffName = result.data.staffName
+
+                            $('#staffName').html(staffName);
+                            $('#outletsName').html(outletsName);
+
+                            sessionStorage.setItem("branchName", branchName)
+                            sessionStorage.setItem("outletsName", outletsName)
+                            sessionStorage.setItem("staffName", staffName)
+
+                        } else {
+                            alert(result.msg)
+                            history.back(-1);
+                        }
+
+                    }
+                });
+            } else {
+                $('#staffName').html(staffName)
+                $('#outletsName').html(outletsName)
+            }
+        }
+
+        function init() {
+
+            let branchName = decodeURI(getAddressBarParam("branchName"))
+
+
+            $.ajax({
+                cache: false,
+                type: "GET",
+                contentType: "application/json;charset=UTF-8",
+                url: appData.domain + "/jxbocpoints/user/getBranchRanking",
+                beforeSend: function (request) {
+                    request.setRequestHeader("X-Auth-Token", localStorage.getItem("token"));
+                },
+                data: {},
+                dataType: "json",
+                async: false,
+                error: function (request) {
+                    alert("系统繁忙，请重试！");
+                },
+                success: function (result) {
+                    console.log(result)
+                    console.log(result.data.length)
+                    let data = result.data
+                    let html = ''
+
+                    if (isEmpty(branchName)) {
+                        for (let i = 0; i < data.length; i++) {
+                            let rank = i + 1;
+                            if (i === 0) {
+                                rank = '<img src="images/1.png"/>'
+                            }
+                            if (i === 1) {
+                                rank = '<img src="images/2.png"/>'
+                            }
+                            if (i === 2) {
+                                rank = '<img src="images/3.png"/>'
+                            }
+
+                            let href = 'outletsRanking.html?branchName=' + encodeURI(encodeURI(data[i].branchName))
+                            html = html + '<li><a href="' + href + '">\n' +
+                                '        <div class="kehu_l">' + rank + '</div>\n' +
+                                '        <div class="kehu_m">' + data[i].branchName + '</div>\n' +
+                                '        <div class="kehu_r">' + data[i].branchNumber + '</div>\n' +
+                                '        <div class="clear"></div>\n' +
+                                '    </a></li>'
+                        }
+                    } else {
+                        for (let i = 0; i < data.length; i++) {
+                            if (branchName === data[i].branchName) {
+                                let rank = '<img src="images/1.png"/>'
+                                let href = 'outletsRanking.html?branchName=' + encodeURI(encodeURI(data[i].branchName))
+                                html = html + '<li><a href="' + href + '">\n' +
+                                    '        <div class="kehu_l">' + rank + '</div>\n' +
+                                    '        <div class="kehu_m">' + data[i].branchName + '</div>\n' +
+                                    '        <div class="kehu_r">' + data[i].branchNumber + '</div>\n' +
+                                    '        <div class="clear"></div>\n' +
+                                    '    </a></li>'
+                            }
+
+                        }
+                    }
+
+
+                    $('#kehu_list').html(html)
+
+                }
+            });
+
+        }
+
+    </script>
+</head>
+
+<body>
+
+<div class="luru_top">
+    <div class="luru_top1">
+        <div class="luru_touxiang"><img src="images/bocLogo.png"/></div>
+        <div class="luru_txt">
+            <p><strong id="staffName">王璐
+            </strong></p>
+            <p><strong id="outletsName">用户体验部</strong></p>
+
+        </div>
+        <div class="clear"></div>
+    </div>
+
+</div>
+
+<!--<div class="shiaxuan2"><div class="shaixuan_t">江西中行</div>-->
+<!--<select name="" class="xiala2">-->
+<!--  <option>全部</option>-->
+<!--  <option>近一月</option>-->
+<!--  <option>近一周</option>-->
+<!--  <option>今日</option>-->
+<!--</select></div>-->
+<div class="tuijian_t">
+    <div class="tuijian_t1">排名</div>
+    <div class="tuijian_t2">机构名称</div>
+    <div class="tuijian_t3">激活客户数</div>
+    <div class="clear"></div>
+</div>
+<ul id="kehu_list">
+    <li><a href="#">
+        <div class="kehu_l"><img src="images/1.png"/></div>
+        <div class="kehu_m">江西中行</div>
+        <div class="kehu_r">84250</div>
+        <div class="clear"></div>
+    </a></li>
+    <li><a href="#">
+        <div class="kehu_l"><img src="images/2.png"/></div>
+        <div class="kehu_m">江西中行</div>
+        <div class="kehu_r">84250</div>
+        <div class="clear"></div>
+    </a></li>
+    <li><a href="#">
+        <div class="kehu_l"><img src="images/3.png"/></div>
+        <div class="kehu_m">江西中行</div>
+        <div class="kehu_r">84250</div>
+        <div class="clear"></div>
+    </a></li>
+    <li><a href="#">
+        <div class="kehu_l">4</div>
+        <div class="kehu_m">江西中行</div>
+        <div class="kehu_r">84250</div>
+        <div class="clear"></div>
+    </a></li>
+    </li>
+    <li><a href="#">
+        <div class="kehu_l">5</div>
+        <div class="kehu_m">江西中行</div>
+        <div class="kehu_r">84250</div>
+        <div class="clear"></div>
+    </a></li>
+
+    <li><a href="#">
+        <div class="kehu_l">6</div>
+        <div class="kehu_m">江西中行</div>
+        <div class="kehu_r">84250</div>
+        <div class="clear"></div>
+    </a></li>
+    <li><a href="#">
+        <div class="kehu_l">7</div>
+        <div class="kehu_m">江西中行</div>
+        <div class="kehu_r">84250</div>
+        <div class="clear"></div>
+    </a></li>
+    <li><a href="#">
+        <div class="kehu_l">8</div>
+        <div class="kehu_m">江西中行</div>
+        <div class="kehu_r">84250</div>
+        <div class="clear"></div>
+    </a></li>
+    <li><a href="#">
+        <div class="kehu_l">9</div>
+        <div class="kehu_m">江西中行</div>
+        <div class="kehu_r">84250</div>
+        <div class="clear"></div>
+    </a></li>
+    <li><a href="#">
+        <div class="kehu_l">10</div>
+        <div class="kehu_m">江西中行</div>
+        <div class="kehu_r">84250</div>
+        <div class="clear"></div>
+    </a></li>
+</ul>
+
+</body>
+</html>
